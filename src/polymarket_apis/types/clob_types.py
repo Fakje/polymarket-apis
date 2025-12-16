@@ -508,7 +508,7 @@ class OrderPostResponse(BaseModel):
     order_id: Union[Keccak256, Literal[""]] = Field(alias="orderID")
     taking_amount: str = Field(alias="takingAmount")
     making_amount: str = Field(alias="makingAmount")
-    status: Literal["live", "matched", "delayed"]
+    status: Literal["live", "matched", "delayed", "unmatched", ""]
     success: bool
 
 
