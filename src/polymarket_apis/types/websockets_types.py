@@ -2,16 +2,16 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Literal, Optional
 
-from pydantic import AliasChoices, BaseModel, Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 
 from ..types.clob_types import MakerOrder, OrderBookSummary, TickSize
-from ..types.common import EthAddress, Keccak256, TimeseriesPoint
+from ..types.common import Base, EthAddress, Keccak256, TimeseriesPoint
 from ..types.gamma_types import Comment, Reaction
 
 # wss://ws-subscriptions-clob.polymarket.com/ws/market types
 
 
-class PriceChange(BaseModel):
+class PriceChange(Base):
     best_ask: Decimal = Field(validation_alias=AliasChoices("ba", "best_ask"))
     best_bid: Decimal = Field(validation_alias=AliasChoices("bb", "best_bid"))
     price: Decimal = Field(validation_alias=AliasChoices("p", "price"))
@@ -21,7 +21,7 @@ class PriceChange(BaseModel):
     hash: str = Field(validation_alias=AliasChoices("h", "hash"))
 
 
-class PriceChanges(BaseModel):
+class PriceChanges(Base):
     condition_id: Keccak256 = Field(validation_alias=AliasChoices("m", "market"))
     price_changes: list[PriceChange] = Field(
         validation_alias=AliasChoices("pc", "price_changes")
@@ -29,14 +29,14 @@ class PriceChanges(BaseModel):
     timestamp: datetime = Field(validation_alias=AliasChoices("t", "timestamp"))
 
 
-class TickSizeChange(BaseModel):
+class TickSizeChange(Base):
     token_id: str = Field(alias="asset_id")
     condition_id: Keccak256 = Field(alias="market")
     old_tick_size: TickSize
     new_tick_size: TickSize
 
 
-class LastTradePrice(BaseModel):
+class LastTradePrice(Base):
     price: Decimal
     size: Decimal
     side: Literal["BUY", "SELL"]
@@ -67,7 +67,7 @@ class LastTradePriceEvent(LastTradePrice):
 # wss://ws-subscriptions-clob.polymarket.com/ws/user types
 
 
-class OrderEvent(BaseModel):
+class OrderEvent(Base):
     token_id: str = Field(alias="asset_id")
     condition_id: Keccak256 = Field(alias="market")
     order_id: Keccak256 = Field(alias="id")
@@ -99,7 +99,7 @@ class OrderEvent(BaseModel):
         return v
 
 
-class TradeEvent(BaseModel):
+class TradeEvent(Base):
     token_id: str = Field(alias="asset_id")
     condition_id: Keccak256 = Field(alias="market")
     taker_order_id: Keccak256
@@ -127,7 +127,7 @@ class TradeEvent(BaseModel):
 
 
 # Payload models
-class ActivityTrade(BaseModel):
+class ActivityTrade(Base):
     token_id: str = Field(
         alias="asset"
     )  # ERC1155 token ID of conditional token being traded
@@ -153,7 +153,7 @@ class ActivityTrade(BaseModel):
     profile_image_optimized: Optional[str] = Field(None, alias="profileImageOptimized")
 
 
-class Request(BaseModel):
+class Request(Base):
     request_id: str = Field(alias="requestId")  # Unique identifier for the request
     proxy_address: str = Field(alias="proxyAddress")  # Proxy address
     user_address: str = Field(alias="userAddress")  # User address
@@ -182,7 +182,7 @@ class Request(BaseModel):
     expiry: Optional[datetime] = None
 
 
-class Quote(BaseModel):
+class Quote(Base):
     quote_id: str = Field(alias="quoteId")  # Unique identifier for the quote
     request_id: str = Field(alias="requestId")  # Associated request identifier
     proxy_address: str = Field(alias="proxyAddress")  # Proxy address
@@ -211,7 +211,7 @@ class Quote(BaseModel):
     expiry: Optional[datetime] = None
 
 
-class CryptoPriceSubscribe(BaseModel):
+class CryptoPriceSubscribe(Base):
     data: list[TimeseriesPoint]
     symbol: str
 
@@ -227,7 +227,7 @@ class AggOrderBookSummary(OrderBookSummary):
     neg_risk: bool
 
 
-class LiveDataClobMarket(BaseModel):
+class LiveDataClobMarket(Base):
     token_ids: list[str] = Field(alias="asset_ids")
     condition_id: Keccak256 = Field(alias="market")
     min_order_size: Decimal
@@ -236,35 +236,35 @@ class LiveDataClobMarket(BaseModel):
 
 
 # Event models
-class ActivityTradeEvent(BaseModel):
+class ActivityTradeEvent(Base):
     payload: ActivityTrade
     timestamp: datetime
     type: Literal["trades"]
     topic: Literal["activity"]
 
 
-class ActivityOrderMatchEvent(BaseModel):
+class ActivityOrderMatchEvent(Base):
     payload: ActivityTrade
     timestamp: datetime
     type: Literal["orders_matched"]
     topic: Literal["activity"]
 
 
-class CommentEvent(BaseModel):
+class CommentEvent(Base):
     payload: Comment
     timestamp: datetime
     type: Literal["comment_created", "comment_removed"]
     topic: Literal["comments"]
 
 
-class ReactionEvent(BaseModel):
+class ReactionEvent(Base):
     payload: Reaction
     timestamp: datetime
     type: Literal["reaction_created", "reaction_removed"]
     topic: Literal["comments"]
 
 
-class RequestEvent(BaseModel):
+class RequestEvent(Base):
     payload: Request
     timestamp: datetime
     type: Literal[
@@ -273,14 +273,14 @@ class RequestEvent(BaseModel):
     topic: Literal["rfq"]
 
 
-class QuoteEvent(BaseModel):
+class QuoteEvent(Base):
     payload: Quote
     timestamp: datetime
     type: Literal["quote_created", "quote_edited", "quote_canceled", "quote_expired"]
     topic: Literal["rfq"]
 
 
-class CryptoPriceUpdateEvent(BaseModel):
+class CryptoPriceUpdateEvent(Base):
     payload: CryptoPriceUpdate
     timestamp: datetime
     connection_id: str
@@ -288,14 +288,14 @@ class CryptoPriceUpdateEvent(BaseModel):
     topic: Literal["crypto_prices", "crypto_prices_chainlink"]
 
 
-class CryptoPriceSubscribeEvent(BaseModel):
+class CryptoPriceSubscribeEvent(Base):
     payload: CryptoPriceSubscribe
     timestamp: datetime
     type: Literal["subscribe"]
     topic: Literal["crypto_prices", "crypto_prices_chainlink"]
 
 
-class LiveDataOrderBookSummaryEvent(BaseModel):
+class LiveDataOrderBookSummaryEvent(Base):
     payload: list[AggOrderBookSummary] | AggOrderBookSummary
     timestamp: datetime
     connection_id: str
@@ -303,7 +303,7 @@ class LiveDataOrderBookSummaryEvent(BaseModel):
     topic: Literal["clob_market"]
 
 
-class LiveDataPriceChangeEvent(BaseModel):
+class LiveDataPriceChangeEvent(Base):
     payload: PriceChanges
     timestamp: datetime
     connection_id: str
@@ -311,7 +311,7 @@ class LiveDataPriceChangeEvent(BaseModel):
     topic: Literal["clob_market"]
 
 
-class LiveDataLastTradePriceEvent(BaseModel):
+class LiveDataLastTradePriceEvent(Base):
     payload: LastTradePrice
     timestamp: datetime
     connection_id: str
@@ -319,7 +319,7 @@ class LiveDataLastTradePriceEvent(BaseModel):
     topic: Literal["clob_market"]
 
 
-class LiveDataTickSizeChangeEvent(BaseModel):
+class LiveDataTickSizeChangeEvent(Base):
     payload: TickSizeChange
     timestamp: datetime
     connection_id: str
@@ -327,7 +327,7 @@ class LiveDataTickSizeChangeEvent(BaseModel):
     topic: Literal["clob_market"]
 
 
-class MarketStatusChangeEvent(BaseModel):
+class MarketStatusChangeEvent(Base):
     payload: LiveDataClobMarket
     timestamp: datetime
     connection_id: str
@@ -335,7 +335,7 @@ class MarketStatusChangeEvent(BaseModel):
     topic: Literal["clob_market"]
 
 
-class LiveDataOrderEvent(BaseModel):
+class LiveDataOrderEvent(Base):
     payload: OrderEvent
     timestamp: datetime
     connection_id: str
@@ -343,7 +343,7 @@ class LiveDataOrderEvent(BaseModel):
     topic: Literal["clob_user"]
 
 
-class LiveDataTradeEvent(BaseModel):
+class LiveDataTradeEvent(Base):
     payload: TradeEvent
     timestamp: datetime
     connection_id: str
@@ -351,7 +351,7 @@ class LiveDataTradeEvent(BaseModel):
     topic: Literal["clob_user"]
 
 
-class ErrorEvent(BaseModel):
+class ErrorEvent(Base):
     message: str
     connection_id: str = Field(alias="connectionId")
     request_id: str = Field(alias="requestId")
