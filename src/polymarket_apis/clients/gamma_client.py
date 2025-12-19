@@ -2,6 +2,7 @@ import json
 import random
 import string
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal, Optional, Union
 from urllib.parse import urljoin
 
@@ -117,16 +118,16 @@ class PolymarketGammaClient:
         condition_ids: list[str] | None = None,
         tag_id: int | None = None,
         related_tags: bool | None = False,
-        liquidity_num_min: float | None = None,
-        liquidity_num_max: float | None = None,
-        volume_num_min: float | None = None,
-        volume_num_max: float | None = None,
+        liquidity_num_min: Decimal | None = None,
+        liquidity_num_max: Decimal | None = None,
+        volume_num_min: Decimal | None = None,
+        volume_num_max: Decimal | None = None,
         start_date_min: datetime | None = None,
         start_date_max: datetime | None = None,
         end_date_min: datetime | None = None,
         end_date_max: datetime | None = None,
     ) -> list[GammaMarket]:
-        params: dict[str, float | int | list[int] | str | list[str] | bool] = {}
+        params: dict[str, Decimal | int | list[int] | str | list[str] | bool] = {}
         if limit:
             params["limit"] = limit
         if offset:
@@ -213,10 +214,10 @@ class PolymarketGammaClient:
         archived: Optional[bool] = None,
         active: Optional[bool] = None,
         closed: Optional[bool] = None,
-        liquidity_min: Optional[float] = None,
-        liquidity_max: Optional[float] = None,
-        volume_min: Optional[float] = None,
-        volume_max: Optional[float] = None,
+        liquidity_min: Optional[Decimal] = None,
+        liquidity_max: Optional[Decimal] = None,
+        volume_min: Optional[Decimal] = None,
+        volume_max: Optional[Decimal] = None,
         start_date_min: Optional[datetime] = None,
         start_date_max: Optional[datetime] = None,
         end_date_min: Optional[datetime] = None,
@@ -226,7 +227,7 @@ class PolymarketGammaClient:
         tag_slug: Optional[str] = None,
         related_tags: bool = False,
     ) -> list[Event]:
-        params: dict[str, int | str | list[str] | float] = {
+        params: dict[str, int | str | list[str] | Decimal] = {
             "limit": limit,
             "offset": offset,
         }
@@ -281,10 +282,10 @@ class PolymarketGammaClient:
         archived: Optional[bool] = None,
         active: Optional[bool] = None,
         closed: Optional[bool] = None,
-        liquidity_min: Optional[float] = None,
-        liquidity_max: Optional[float] = None,
-        volume_min: Optional[float] = None,
-        volume_max: Optional[float] = None,
+        liquidity_min: Optional[Decimal] = None,
+        liquidity_max: Optional[Decimal] = None,
+        volume_min: Optional[Decimal] = None,
+        volume_max: Optional[Decimal] = None,
         start_date_min: Optional[datetime] = None,
         start_date_max: Optional[datetime] = None,
         end_date_min: Optional[datetime] = None,

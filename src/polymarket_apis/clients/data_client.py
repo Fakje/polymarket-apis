@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal, Optional, Union
 from urllib.parse import urljoin
 
@@ -39,7 +40,7 @@ class PolymarketDataClient:
     def get_all_positions(
         self,
         user: EthAddress,
-        size_threshold: float = 0.0,
+        size_threshold: Decimal = Decimal("0.0"),
     ):
         # data-api /positions endpoint does not support fetching all positions without filters
         # a workaround is to use the GraphQL positions subgraph directly
@@ -74,7 +75,7 @@ class PolymarketDataClient:
         event_id: Optional[
             Union[int, list[int]]
         ] = None,  # mutually exclusive with condition_id
-        size_threshold: float = 1.0,
+        size_threshold: Decimal = Decimal("1.0"),
         redeemable: bool = False,
         mergeable: bool = False,
         title: Optional[str] = None,
@@ -93,7 +94,7 @@ class PolymarketDataClient:
         ] = "TOKENS",
         sort_direction: Literal["ASC", "DESC"] = "DESC",
     ) -> list[Position]:
-        params: dict[str, str | list[str] | int | float] = {
+        params: dict[str, str | list[str] | int | Decimal] = {
             "user": user,
             "sizeThreshold": size_threshold,
             "limit": min(limit, 500),
@@ -129,14 +130,14 @@ class PolymarketDataClient:
         taker_only: bool = True,
         filter_type: Optional[Literal["CASH", "TOKENS"]] = None,
         filter_amount: Optional[
-            float
+            Decimal
         ] = None,  # must be provided together with filter_type
         condition_id: Optional[str | list[str]] = None,
         event_id: Optional[int | list[int]] = None,
         user: Optional[str] = None,
         side: Optional[Literal["BUY", "SELL"]] = None,
     ) -> list[Trade]:
-        params: dict[str, int | bool | float | str | list[str]] = {
+        params: dict[str, int | bool | Decimal | str | list[str]] = {
             "limit": min(limit, 500),
             "offset": offset,
             "takerOnly": taker_only,

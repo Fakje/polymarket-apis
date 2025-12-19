@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     Json,
     ValidationInfo,
@@ -13,13 +12,11 @@ from pydantic import (
     field_validator,
 )
 
-from .common import EthAddress, FlexibleDatetime, Keccak256
+from .common import Base, EthAddress, FlexibleDatetime, Keccak256
 
 
-class OptimizedImage(BaseModel):
+class OptimizedImage(Base):
     """Optimized image data."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     image_url_source: Optional[str] = Field(None, alias="imageUrlSource")
@@ -37,10 +34,8 @@ class OptimizedImage(BaseModel):
     relname: Optional[str] = Field(None, alias="relname")
 
 
-class GammaMarket(BaseModel):
+class GammaMarket(Base):
     """Market model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     condition_id: Optional[Keccak256] = Field(None, alias="conditionId")
@@ -52,7 +47,7 @@ class GammaMarket(BaseModel):
     end_date: Optional[datetime] = Field(None, alias="endDate")
     category: Optional[str] = Field(None, alias="category")
     amm_type: Optional[str] = Field(None, alias="ammType")
-    liquidity: Optional[float] = Field(None, alias="liquidity")
+    liquidity: Optional[Decimal] = Field(None, alias="liquidity")
     sponsor_name: Optional[str] = Field(None, alias="sponsorName")
     sponsor_image: Optional[str] = Field(None, alias="sponsorImage")
     start_date: Optional[datetime] = Field(None, alias="startDate")
@@ -66,7 +61,7 @@ class GammaMarket(BaseModel):
     upper_bound: Optional[str] = Field(None, alias="upperBound")
     description: Optional[str] = Field(None, alias="description")
     outcomes: Optional[str] = Field(None, alias="outcomes")
-    outcome_prices: Optional[Json[list[float]] | list[float]] = Field(
+    outcome_prices: Optional[Json[list[Decimal]] | list[Decimal]] = Field(
         None, alias="outcomePrices"
     )
     volume: Optional[str] = Field(None, alias="volume")
@@ -94,24 +89,24 @@ class GammaMarket(BaseModel):
     group_item_threshold: Optional[str] = Field(None, alias="groupItemThreshold")
     uma_end_date: Optional[FlexibleDatetime] = Field(None, alias="umaEndDate")
     enable_order_book: Optional[bool] = Field(None, alias="enableOrderBook")
-    order_price_min_tick_size: Optional[float] = Field(
+    order_price_min_tick_size: Optional[Decimal] = Field(
         None, alias="orderPriceMinTickSize"
     )
-    order_min_size: Optional[float] = Field(None, alias="orderMinSize")
+    order_min_size: Optional[Decimal] = Field(None, alias="orderMinSize")
     uma_resolution_status: Optional[str] = Field(None, alias="umaResolutionStatus")
     curation_order: Optional[int] = Field(None, alias="curationOrder")
-    volume_num: Optional[float] = Field(None, alias="volumeNum")
-    liquidity_num: Optional[float] = Field(None, alias="liquidityNum")
+    volume_num: Optional[Decimal] = Field(None, alias="volumeNum")
+    liquidity_num: Optional[Decimal] = Field(None, alias="liquidityNum")
     end_date_iso: Optional[datetime] = Field(None, alias="endDateIso")
     start_date_iso: Optional[datetime] = Field(None, alias="startDateIso")
     uma_end_date_iso: Optional[datetime] = Field(None, alias="umaEndDateIso")
     has_reviewed_dates: Optional[bool] = Field(None, alias="hasReviewedDates")
     ready_for_cron: Optional[bool] = Field(None, alias="readyForCron")
     comments_enabled: Optional[bool] = Field(None, alias="commentsEnabled")
-    volume_24hr: Optional[float] = Field(None, alias="volume24hr")
-    volume_1wk: Optional[float] = Field(None, alias="volume1wk")
-    volume_1mo: Optional[float] = Field(None, alias="volume1mo")
-    volume_1yr: Optional[float] = Field(None, alias="volume1yr")
+    volume_24hr: Optional[Decimal] = Field(None, alias="volume24hr")
+    volume_1wk: Optional[Decimal] = Field(None, alias="volume1wk")
+    volume_1mo: Optional[Decimal] = Field(None, alias="volume1mo")
+    volume_1yr: Optional[Decimal] = Field(None, alias="volume1yr")
     game_start_time: Optional[str] = Field(None, alias="gameStartTime")
     seconds_delay: Optional[int] = Field(None, alias="secondsDelay")
     token_ids: Optional[Json[list[str]] | list[str]] = Field(None, alias="clobTokenIds")
@@ -122,18 +117,18 @@ class GammaMarket(BaseModel):
     uma_bond: Optional[str] = Field(None, alias="umaBond")
     uma_reward: Optional[str] = Field(None, alias="umaReward")
     fpmm_live: Optional[bool] = Field(None, alias="fpmmLive")
-    volume_24hr_amm: Optional[float] = Field(None, alias="volume24hrAmm")
-    volume_1wk_amm: Optional[float] = Field(None, alias="volume1wkAmm")
-    volume_1mo_amm: Optional[float] = Field(None, alias="volume1moAmm")
-    volume_1yr_amm: Optional[float] = Field(None, alias="volume1yrAmm")
-    volume_24hr_clob: Optional[float] = Field(None, alias="volume24hrClob")
-    volume_1wk_clob: Optional[float] = Field(None, alias="volume1wkClob")
-    volume_1mo_clob: Optional[float] = Field(None, alias="volume1moClob")
-    volume_1yr_clob: Optional[float] = Field(None, alias="volume1yrClob")
-    volume_amm: Optional[float] = Field(None, alias="volumeAmm")
-    volume_clob: Optional[float] = Field(None, alias="volumeClob")
-    liquidity_amm: Optional[float] = Field(None, alias="liquidityAmm")
-    liquidity_clob: Optional[float] = Field(None, alias="liquidityClob")
+    volume_24hr_amm: Optional[Decimal] = Field(None, alias="volume24hrAmm")
+    volume_1wk_amm: Optional[Decimal] = Field(None, alias="volume1wkAmm")
+    volume_1mo_amm: Optional[Decimal] = Field(None, alias="volume1moAmm")
+    volume_1yr_amm: Optional[Decimal] = Field(None, alias="volume1yrAmm")
+    volume_24hr_clob: Optional[Decimal] = Field(None, alias="volume24hrClob")
+    volume_1wk_clob: Optional[Decimal] = Field(None, alias="volume1wkClob")
+    volume_1mo_clob: Optional[Decimal] = Field(None, alias="volume1moClob")
+    volume_1yr_clob: Optional[Decimal] = Field(None, alias="volume1yrClob")
+    volume_amm: Optional[Decimal] = Field(None, alias="volumeAmm")
+    volume_clob: Optional[Decimal] = Field(None, alias="volumeClob")
+    liquidity_amm: Optional[Decimal] = Field(None, alias="liquidityAmm")
+    liquidity_clob: Optional[Decimal] = Field(None, alias="liquidityClob")
     maker_base_fee: Optional[int] = Field(None, alias="makerBaseFee")
     taker_base_fee: Optional[int] = Field(None, alias="takerBaseFee")
     custom_liveness: Optional[int] = Field(None, alias="customLiveness")
@@ -154,19 +149,19 @@ class GammaMarket(BaseModel):
     accepting_orders_timestamp: Optional[datetime] = Field(
         None, alias="acceptingOrdersTimestamp"
     )
-    competitive: Optional[float] = Field(None, alias="competitive")
-    rewards_min_size: Optional[float] = Field(None, alias="rewardsMinSize")
-    rewards_max_spread: Optional[float] = Field(None, alias="rewardsMaxSpread")
-    spread: Optional[float] = Field(None, alias="spread")
+    competitive: Optional[Decimal] = Field(None, alias="competitive")
+    rewards_min_size: Optional[Decimal] = Field(None, alias="rewardsMinSize")
+    rewards_max_spread: Optional[Decimal] = Field(None, alias="rewardsMaxSpread")
+    spread: Optional[Decimal] = Field(None, alias="spread")
     automatically_resolved: Optional[bool] = Field(None, alias="automaticallyResolved")
-    one_day_price_change: Optional[float] = Field(None, alias="oneDayPriceChange")
-    one_hour_price_change: Optional[float] = Field(None, alias="oneHourPriceChange")
-    one_week_price_change: Optional[float] = Field(None, alias="oneWeekPriceChange")
-    one_month_price_change: Optional[float] = Field(None, alias="oneMonthPriceChange")
-    one_year_price_change: Optional[float] = Field(None, alias="oneYearPriceChange")
-    last_trade_price: Optional[float] = Field(None, alias="lastTradePrice")
-    best_bid: Optional[float] = Field(None, alias="bestBid")
-    best_ask: Optional[float] = Field(None, alias="bestAsk")
+    one_day_price_change: Optional[Decimal] = Field(None, alias="oneDayPriceChange")
+    one_hour_price_change: Optional[Decimal] = Field(None, alias="oneHourPriceChange")
+    one_week_price_change: Optional[Decimal] = Field(None, alias="oneWeekPriceChange")
+    one_month_price_change: Optional[Decimal] = Field(None, alias="oneMonthPriceChange")
+    one_year_price_change: Optional[Decimal] = Field(None, alias="oneYearPriceChange")
+    last_trade_price: Optional[Decimal] = Field(None, alias="lastTradePrice")
+    best_bid: Optional[Decimal] = Field(None, alias="bestBid")
+    best_ask: Optional[Decimal] = Field(None, alias="bestAsk")
     automatically_active: Optional[bool] = Field(None, alias="automaticallyActive")
     clear_book_on_start: Optional[bool] = Field(None, alias="clearBookOnStart")
     chart_color: Optional[str] = Field(None, alias="chartColor")
@@ -178,7 +173,7 @@ class GammaMarket(BaseModel):
     game_id: Optional[str] = Field(None, alias="gameId")
     group_item_range: Optional[str] = Field(None, alias="groupItemRange")
     sports_market_type: Optional[str] = Field(None, alias="sportsMarketType")
-    line: Optional[float] = Field(None, alias="line")
+    line: Optional[Decimal] = Field(None, alias="line")
     uma_resolution_statuses: Optional[str] = Field(None, alias="umaResolutionStatuses")
     pending_deployment: Optional[bool] = Field(None, alias="pendingDeployment")
     deploying: Optional[bool] = Field(None, alias="deploying")
@@ -220,10 +215,8 @@ class GammaMarket(BaseModel):
             raise
 
 
-class Series(BaseModel):
+class Series(Base):
     """Series model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     ticker: Optional[str] = Field(None, alias="ticker")
@@ -251,9 +244,9 @@ class Series(BaseModel):
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
     comments_enabled: Optional[bool] = Field(None, alias="commentsEnabled")
     competitive: Optional[str] = Field(None, alias="competitive")
-    volume_24hr: Optional[float] = Field(None, alias="volume24hr")
-    volume: Optional[float] = Field(None, alias="volume")
-    liquidity: Optional[float] = Field(None, alias="liquidity")
+    volume_24hr: Optional[Decimal] = Field(None, alias="volume24hr")
+    volume: Optional[Decimal] = Field(None, alias="volume")
+    liquidity: Optional[Decimal] = Field(None, alias="liquidity")
     start_date: Optional[datetime] = Field(None, alias="startDate")
     pyth_token_id: Optional[str] = Field(None, alias="pythTokenID")
     cg_asset_name: Optional[str] = Field(None, alias="cgAssetName")
@@ -266,10 +259,8 @@ class Series(BaseModel):
     chats: Optional[list[Chat]] = Field(None, alias="chats")
 
 
-class Category(BaseModel):
+class Category(Base):
     """Category model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     label: Optional[str] = Field(None, alias="label")
@@ -282,10 +273,8 @@ class Category(BaseModel):
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
 
 
-class Tag(BaseModel):
+class Tag(Base):
     """Tag model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     label: Optional[str] = Field(None, alias="label")
@@ -300,10 +289,8 @@ class Tag(BaseModel):
     is_carousel: Optional[bool] = Field(None, alias="isCarousel")
 
 
-class TagRelation(BaseModel):
+class TagRelation(Base):
     """Tag relation model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: int = Field(alias="id")
     tag_id: int = Field(alias="tagID")
@@ -311,10 +298,8 @@ class TagRelation(BaseModel):
     rank: int
 
 
-class Chat(BaseModel):
+class Chat(Base):
     """Chat model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     channel_id: Optional[str] = Field(None, alias="channelId")
@@ -325,10 +310,8 @@ class Chat(BaseModel):
     end_time: Optional[datetime] = Field(None, alias="endTime")
 
 
-class Collection(BaseModel):
+class Collection(Base):
     """Collection model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     ticker: Optional[str] = Field(None, alias="ticker")
@@ -363,10 +346,8 @@ class Collection(BaseModel):
     )
 
 
-class Creator(BaseModel):
+class Creator(Base):
     """Event Creator model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     creator_name: Optional[str] = Field(None, alias="creatorName")
@@ -377,10 +358,8 @@ class Creator(BaseModel):
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
 
 
-class Template(BaseModel):
+class Template(Base):
     """Template model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     event_title: Optional[str] = Field(None, alias="eventTitle")
@@ -396,24 +375,20 @@ class Template(BaseModel):
     outcomes: Optional[str] = Field(None, alias="outcomes")
 
 
-class ClobReward(BaseModel):
+class ClobReward(Base):
     """Reward model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: int
     condition_id: Keccak256 = Field(alias="conditionId")
     asset_address: str = Field(alias="assetAddress")
-    rewards_amount: float = Field(alias="rewardsAmount")
-    rewards_daily_rate: Optional[float] = Field(None, alias="rewardsDailyRate")
+    rewards_amount: Decimal = Field(alias="rewardsAmount")
+    rewards_daily_rate: Optional[Decimal] = Field(None, alias="rewardsDailyRate")
     start_date: datetime = Field(alias="startDate")
     end_date: datetime = Field(alias="endDate")
 
 
-class Team(BaseModel):
+class Team(Base):
     """Team model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: int
     name: str
@@ -426,10 +401,8 @@ class Team(BaseModel):
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
 
 
-class Sport(BaseModel):
+class Sport(Base):
     """Sport model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     sport: str
     image: Optional[str] = None
@@ -446,10 +419,8 @@ class Sport(BaseModel):
         return v
 
 
-class Event(BaseModel):
+class Event(Base):
     """Event model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: int = Field(alias="id")
     ticker: Optional[str] = Field(None, alias="ticker")
@@ -469,8 +440,8 @@ class Event(BaseModel):
     new: Optional[bool] = Field(None, alias="new")
     featured: Optional[bool] = Field(None, alias="featured")
     restricted: Optional[bool] = Field(None, alias="restricted")
-    liquidity: Optional[float] = Field(None, alias="liquidity")
-    volume: Optional[float] = Field(None, alias="volume")
+    liquidity: Optional[Decimal] = Field(None, alias="liquidity")
+    volume: Optional[Decimal] = Field(None, alias="volume")
     open_interest: Optional[int] = Field(None, alias="openInterest")
     sort_by: Optional[str] = Field(None, alias="sortBy")
     category: Optional[str] = Field(None, alias="category")
@@ -483,17 +454,17 @@ class Event(BaseModel):
     created_at: Optional[datetime] = Field(None, alias="createdAt")
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
     comments_enabled: Optional[bool] = Field(None, alias="commentsEnabled")
-    competitive: Optional[float] = Field(None, alias="competitive")
-    volume_24hr: Optional[float] = Field(None, alias="volume24hr")
-    volume_1wk: Optional[float] = Field(None, alias="volume1wk")
-    volume_1mo: Optional[float] = Field(None, alias="volume1mo")
-    volume_1yr: Optional[float] = Field(None, alias="volume1yr")
+    competitive: Optional[Decimal] = Field(None, alias="competitive")
+    volume_24hr: Optional[Decimal] = Field(None, alias="volume24hr")
+    volume_1wk: Optional[Decimal] = Field(None, alias="volume1wk")
+    volume_1mo: Optional[Decimal] = Field(None, alias="volume1mo")
+    volume_1yr: Optional[Decimal] = Field(None, alias="volume1yr")
     featured_image: Optional[str] = Field(None, alias="featuredImage")
     disqus_thread: Optional[str] = Field(None, alias="disqusThread")
     parent_event: Optional[str] = Field(None, alias="parentEvent")
     enable_order_book: Optional[bool] = Field(None, alias="enableOrderBook")
-    liquidity_amm: Optional[float] = Field(None, alias="liquidityAmm")
-    liquidity_clob: Optional[float] = Field(None, alias="liquidityClob")
+    liquidity_amm: Optional[Decimal] = Field(None, alias="liquidityAmm")
+    liquidity_clob: Optional[Decimal] = Field(None, alias="liquidityClob")
     neg_risk: Optional[bool] = Field(None, alias="negRisk")
     neg_risk_augmented: Optional[bool] = Field(None, alias="negRiskAugmented")
     neg_risk_market_id: Optional[str] = Field(None, alias="negRiskMarketID")
@@ -536,8 +507,8 @@ class Event(BaseModel):
     cant_estimate: Optional[bool] = Field(None, alias="cantEstimate")
     estimated_value: Optional[str] = Field(None, alias="estimatedValue")
     templates: Optional[list[Template]] = Field(None, alias="templates")
-    spreads_main_line: Optional[float] = Field(None, alias="spreadsMainLine")
-    totals_main_line: Optional[float] = Field(None, alias="totalsMainLine")
+    spreads_main_line: Optional[Decimal] = Field(None, alias="spreadsMainLine")
+    totals_main_line: Optional[Decimal] = Field(None, alias="totalsMainLine")
     carousel_map: Optional[str] = Field(None, alias="carouselMap")
     pending_deployment: Optional[bool] = Field(None, alias="pendingDeployment")
     deploying: Optional[bool] = Field(None, alias="deploying")
@@ -548,23 +519,19 @@ class Event(BaseModel):
     game_status: Optional[str] = Field(None, alias="gameStatus")
 
 
-class ProfilePosition(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class ProfilePosition(Base):
     token_id: int = Field(alias="tokenId")
-    size: Optional[float] = Field(None, alias="positionSize")
+    size: Optional[Decimal] = Field(None, alias="positionSize")
 
     @field_validator("size", mode="before")
     @classmethod
-    def normalize_size(cls, v) -> float:
+    def normalize_size(cls, v) -> Decimal:
         if isinstance(v, str):
-            return int(v) / 10**6
+            return Decimal(v) / Decimal(10**6)
         return v
 
 
-class Profile(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class Profile(Base):
     name: Optional[str] = None
     pseudonym: Optional[str] = None
     display_username_public: Optional[bool] = Field(None, alias="displayUsernamePublic")
@@ -574,9 +541,7 @@ class Profile(BaseModel):
     positions: Optional[list[ProfilePosition]] = Field(None, alias="positions")
 
 
-class Comment(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class Comment(Base):
     id: str
     body: str
     parent_entity_type: Literal["Event", "Series", "market"] = Field(
@@ -594,9 +559,7 @@ class Comment(BaseModel):
     reaction_count: Optional[int] = Field(None, alias="reactionCount")
 
 
-class Reaction(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class Reaction(Base):
     id: str
     comment_id: int = Field(alias="commentID")
     reaction_type: str = Field(alias="reactionType")
@@ -606,14 +569,12 @@ class Reaction(BaseModel):
     profile: Optional[Profile] = None
 
 
-class Pagination(BaseModel):
+class Pagination(Base):
     has_more: bool = Field(alias="hasMore")
     total_results: int = Field(alias="totalResults")
 
 
-class SearchResult(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class SearchResult(Base):
     events: Optional[list[Event]] = None
     tags: Optional[list[Tag]] = None
     profiles: Optional[list[Profile]] = None

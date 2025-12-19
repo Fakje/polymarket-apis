@@ -1,10 +1,92 @@
+from __future__ import annotations
+
 import re
 from datetime import UTC, datetime
-from typing import Annotated, Any
+from decimal import Decimal
+from typing import Annotated, Any, get_args, get_origin, Union, List, Dict
 
 from dateutil import parser
 from hexbytes import HexBytes
-from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict, Field, model_validator
+
+
+class Base(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+        from_attributes=True,
+        strict=False,
+        json_encoders={Decimal: str},  # Convert Decimal to string on serialization
+    )
+
+    @model_validator(mode='before')
+    @classmethod
+    def _convert_floats_to_decimals(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+
+        converted_data = data.copy()
+        for field_name, field_info in cls.model_fields.items():
+            input_key = field_info.alias or field_name
+
+            if input_key in converted_data:
+                value = converted_data[input_key]
+                target_type = field_info.annotation
+
+                is_decimal_like = cls._is_decimal_like_annotation(target_type)
+                is_float_value = isinstance(value, float)
+
+                if is_decimal_like and is_float_value:
+                    converted_data[input_key] = Decimal(str(value))
+                elif isinstance(value, list):
+                    list_item_type = None
+                    origin = get_origin(target_type)
+                    args = get_args(target_type)
+
+                    if origin in (list, List) and args:
+                        list_item_type = args[0]
+                    elif origin is Union:  # Handle Optional[List[X]]
+                        for arg in args:
+                            if get_origin(arg) in (list, List) and get_args(arg):
+                                list_item_type = get_args(arg)[0]
+                                break
+
+                    if list_item_type:
+                        new_list = []
+                        for item in value:
+                            item_is_decimal_like = cls._is_decimal_like_annotation(list_item_type)
+                            item_is_float_value = isinstance(item, float)
+
+                            if item_is_decimal_like and item_is_float_value:
+                                new_list.append(Decimal(str(item)))
+                            elif isinstance(item, dict) and isinstance(list_item_type, type) and issubclass(list_item_type, BaseModel):
+                                new_list.append(list_item_type._convert_floats_to_decimals(item))
+                            else:
+                                new_list.append(item)
+                        converted_data[input_key] = new_list
+                elif isinstance(value, dict) and isinstance(target_type, type) and issubclass(target_type, BaseModel):
+                    converted_data[input_key] = target_type._convert_floats_to_decimals(value)
+
+        return converted_data
+
+    @classmethod
+    def _is_decimal_like_annotation(cls, type_hint: Any) -> bool:
+        """Checks if a type hint (or its contained types) is Decimal."""
+        origin = get_origin(type_hint)
+        args = get_args(type_hint)
+
+        if type_hint is Decimal:
+            return True
+        if origin is Union:  # Handles Optional[X] which is Union[X, None]
+            return any(cls._is_decimal_like_annotation(arg) for arg in args)
+        if origin is Annotated:
+            return cls._is_decimal_like_annotation(args[0])
+        # For List[Decimal], we check the item type
+        if origin in (list, List) and args:
+            return cls._is_decimal_like_annotation(args[0])
+        # Pydantic's Json type is a special case, it wraps another type
+        if str(origin) == "<class 'pydantic.types.Json'>" and args:
+            return cls._is_decimal_like_annotation(args[0])
+        return False
 
 
 def parse_flexible_datetime(v: str | datetime) -> datetime:
@@ -114,8 +196,6 @@ Keccak256OrPadded = Annotated[str, BeforeValidator(validate_keccak_or_padded)]
 EmptyString = Annotated[str, Field(pattern=r"^$", description="An empty string")]
 
 
-class TimeseriesPoint(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    value: float = Field(alias="p")
+class TimeseriesPoint(Base):
+    value: Decimal = Field(alias="p")
     timestamp: datetime = Field(alias="t")

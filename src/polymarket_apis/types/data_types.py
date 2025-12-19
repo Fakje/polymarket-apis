@@ -1,18 +1,19 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
-from .common import EmptyString, EthAddress, Keccak256
+from .common import Base, EmptyString, EthAddress, Keccak256
 
 
-class GQLPosition(BaseModel):
+class GQLPosition(Base):
     user: EthAddress
     token_id: str
     complementary_token_id: str
     condition_id: Keccak256
     outcome_index: int
-    balance: float
+    balance: Decimal
 
     @model_validator(mode="before")
     def _flatten(cls, values):
@@ -35,10 +36,10 @@ class GQLPosition(BaseModel):
     def _parse_balance(cls, value):
         if isinstance(value, str):
             value = int(value)
-        return value / 10**6
+        return Decimal(value) / Decimal(10**6)
 
 
-class Position(BaseModel):
+class Position(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
@@ -51,19 +52,19 @@ class Position(BaseModel):
     outcome_index: int = Field(alias="outcomeIndex")
 
     # Position details
-    size: float
-    avg_price: float = Field(alias="avgPrice")
-    current_price: float = Field(alias="curPrice")
+    size: Decimal
+    avg_price: Decimal = Field(alias="avgPrice")
+    current_price: Decimal = Field(alias="curPrice")
     redeemable: bool
 
     # Financial metrics
-    initial_value: float = Field(alias="initialValue")
-    current_value: float = Field(alias="currentValue")
-    cash_pnl: float = Field(alias="cashPnl")
-    percent_pnl: float = Field(alias="percentPnl")
-    total_bought: float = Field(alias="totalBought")
-    realized_pnl: float = Field(alias="realizedPnl")
-    percent_realized_pnl: float = Field(alias="percentRealizedPnl")
+    initial_value: Decimal = Field(alias="initialValue")
+    current_value: Decimal = Field(alias="currentValue")
+    cash_pnl: Decimal = Field(alias="cashPnl")
+    percent_pnl: Decimal = Field(alias="percentPnl")
+    total_bought: Decimal = Field(alias="totalBought")
+    realized_pnl: Decimal = Field(alias="realizedPnl")
+    percent_realized_pnl: Decimal = Field(alias="percentRealizedPnl")
 
     # Event information
     title: str
@@ -80,7 +81,7 @@ class Position(BaseModel):
         return v
 
 
-class Trade(BaseModel):
+class Trade(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
@@ -88,8 +89,8 @@ class Trade(BaseModel):
     side: Literal["BUY", "SELL"]
     token_id: str = Field(alias="asset")
     condition_id: Keccak256 = Field(alias="conditionId")
-    size: float
-    price: float
+    size: Decimal
+    price: Decimal
     timestamp: datetime
 
     # Event information
@@ -111,7 +112,7 @@ class Trade(BaseModel):
     transaction_hash: Keccak256 = Field(alias="transactionHash")
 
 
-class Activity(BaseModel):
+class Activity(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
@@ -119,9 +120,9 @@ class Activity(BaseModel):
     timestamp: datetime
     condition_id: Keccak256 | EmptyString = Field(alias="conditionId")
     type: Literal["TRADE", "SPLIT", "MERGE", "REDEEM", "REWARD", "CONVERSION"]
-    size: float
-    usdc_size: float = Field(alias="usdcSize")
-    price: float
+    size: Decimal
+    usdc_size: Decimal = Field(alias="usdcSize")
+    price: Decimal
     asset: str
     side: str | None
     outcome_index: int = Field(alias="outcomeIndex")
@@ -144,13 +145,13 @@ class Activity(BaseModel):
     transaction_hash: Keccak256 = Field(alias="transactionHash")
 
 
-class Holder(BaseModel):
+class Holder(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
     # Holder details
     token_id: str = Field(alias="asset")
-    amount: float
+    amount: Decimal
     outcome_index: int = Field(alias="outcomeIndex")
 
     # User profile
@@ -162,7 +163,7 @@ class Holder(BaseModel):
     display_username_public: bool = Field(alias="displayUsernamePublic")
 
 
-class HolderResponse(BaseModel):
+class HolderResponse(Base):
     # Asset information
     token_id: str = Field(alias="token")
 
@@ -170,15 +171,15 @@ class HolderResponse(BaseModel):
     holders: list[Holder]
 
 
-class ValueResponse(BaseModel):
+class ValueResponse(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
     # Value information
-    value: float
+    value: Decimal
 
 
-class User(BaseModel):
+class User(Base):
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
     name: str
     bio: str
@@ -187,20 +188,20 @@ class User(BaseModel):
 
 
 class UserMetric(User):
-    amount: float
+    amount: Decimal
     pseudonym: str
 
 
 class UserRank(User):
-    amount: float
+    amount: Decimal
     rank: int
 
 
-class MarketValue(BaseModel):
+class MarketValue(Base):
     condition_id: Keccak256 = Field(alias="market")
-    value: float
+    value: Decimal
 
 
-class EventLiveVolume(BaseModel):
-    total: Optional[float]
+class EventLiveVolume(Base):
+    total: Optional[Decimal]
     markets: Optional[list[MarketValue]]

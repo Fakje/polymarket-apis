@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from decimal import Decimal
 from json import dumps, load
 from pathlib import Path
 from typing import Literal
@@ -235,11 +236,11 @@ class BaseWeb3Client(ABC):
         address = address if address else self.account.address
         return self.safe_proxy_factory.functions.computeProxyAddress(address).call()
 
-    def get_pol_balance(self) -> float:
+    def get_pol_balance(self) -> Decimal:
         """Get POL balance for the base address associated with the private key."""
-        return round(self.w3.eth.get_balance(self.account.address) / 10**18, 4)
+        return Decimal(self.w3.eth.get_balance(self.account.address)) / Decimal(10**18)
 
-    def get_usdc_balance(self, address: EthAddress | None = None) -> float:
+    def get_usdc_balance(self, address: EthAddress | None = None) -> Decimal:
         """
         Get USDC balance of an address.
 
@@ -248,18 +249,18 @@ class BaseWeb3Client(ABC):
         if address is None:
             address = self.address
         balance_res = self.usdc.functions.balanceOf(address).call()
-        return float(balance_res / 1e6)
+        return Decimal(balance_res) / Decimal(1e6)
 
     def get_token_balance(
         self, token_id: str, address: EthAddress | None = None
-    ) -> float:
+    ) -> Decimal:
         """Get token balance of an address."""
         if not address:
             address = self.address
         balance_res = self.conditional_tokens.functions.balanceOf(
             address, int(token_id)
         ).call()
-        return float(balance_res / 1e6)
+        return Decimal(balance_res) / Decimal(1e6)
 
     def get_token_complement(self, token_id: str) -> str | None:
         """Get the complement token ID."""
@@ -317,10 +318,10 @@ class BaseWeb3Client(ABC):
         """
 
     def split_position(
-        self, condition_id: Keccak256, amount: float, neg_risk: bool = True
+        self, condition_id: Keccak256, amount: Decimal, neg_risk: bool = True
     ) -> TransactionReceipt:
         """Split USDC into two complementary positions."""
-        amount_int = int(amount * 1e6)
+        amount_int = int(amount * 10**6)
 
         to = (
             self.neg_risk_adapter_address
@@ -332,10 +333,10 @@ class BaseWeb3Client(ABC):
         return self._execute(to, data, "Split Position", metadata="split")
 
     def merge_position(
-        self, condition_id: Keccak256, amount: float, neg_risk: bool = True
+        self, condition_id: Keccak256, amount: Decimal, neg_risk: bool = True
     ) -> TransactionReceipt:
         """Merge two complementary positions into USDC."""
-        amount_int = int(amount * 1e6)
+        amount_int = int(amount * 10**6)
 
         to = (
             self.neg_risk_adapter_address
@@ -347,7 +348,7 @@ class BaseWeb3Client(ABC):
         return self._execute(to, data, "Merge Position", metadata="merge")
 
     def redeem_position(
-        self, condition_id: Keccak256, amounts: list[float], neg_risk: bool = True
+        self, condition_id: Keccak256, amounts: list[Decimal], neg_risk: bool = True
     ) -> TransactionReceipt:
         """
         Redeem positions into USDC.
@@ -359,7 +360,7 @@ class BaseWeb3Client(ABC):
             neg_risk: Whether this is a neg risk market
 
         """
-        int_amounts = [int(amount * 1e6) for amount in amounts]
+        int_amounts = [int(amount * 10**6) for amount in amounts]
 
         to = (
             self.neg_risk_adapter_address
@@ -377,7 +378,7 @@ class BaseWeb3Client(ABC):
     def convert_positions(
         self,
         question_ids: list[Keccak256],
-        amount: float,
+        amount: Decimal,
     ) -> TransactionReceipt:
         """
         Convert neg risk No positions to Yes positions and USDC.
@@ -387,7 +388,7 @@ class BaseWeb3Client(ABC):
             amount: Number of shares to convert
 
         """
-        amount_int = int(amount * 1e6)
+        amount_int = int(amount * 10**6)
         neg_risk_market_id = question_ids[0][:-2] + "00"
 
         to = self.neg_risk_adapter_address
@@ -607,14 +608,14 @@ class PolymarketWeb3Client(BaseWeb3Client):
         print("All approvals set!")
         return receipts
 
-    def transfer_usdc(self, recipient: EthAddress, amount: float) -> TransactionReceipt:
+    def transfer_usdc(self, recipient: EthAddress, amount: Decimal) -> TransactionReceipt:
         """Transfer USDC to recipient."""
         balance = self.get_usdc_balance(address=self.address)
         if balance < amount:
             msg = f"Insufficient USDC balance: {balance} < {amount}"
             raise ValueError(msg)
 
-        amount_int = int(amount * 1e6)
+        amount_int = int(amount * 10**6)
         to = self.usdc_address
         data = self._encode_transfer_usdc(
             self.w3.to_checksum_address(recipient), amount_int
@@ -622,7 +623,7 @@ class PolymarketWeb3Client(BaseWeb3Client):
         return self._execute(to, data, "USDC Transfer")
 
     def transfer_token(
-        self, token_id: str, recipient: EthAddress, amount: float
+        self, token_id: str, recipient: EthAddress, amount: Decimal
     ) -> TransactionReceipt:
         """Transfer conditional token to recipient."""
         balance = self.get_token_balance(token_id=token_id, address=self.address)
@@ -630,7 +631,7 @@ class PolymarketWeb3Client(BaseWeb3Client):
             msg = f"Insufficient token balance: {balance} < {amount}"
             raise ValueError(msg)
 
-        amount_int = int(amount * 1e6)
+        amount_int = int(amount * 10**6)
         to = self.conditional_tokens_address
         data = self._encode_transfer_token(
             token_id, self.w3.to_checksum_address(recipient), amount_int

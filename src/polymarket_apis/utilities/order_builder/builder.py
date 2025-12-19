@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from py_order_utils.builders import OrderBuilder as UtilsOrderBuilder
 from py_order_utils.model import (
     BUY as UTILS_BUY,
@@ -56,8 +58,8 @@ class OrderBuilder:
     def get_order_amounts(
         self,
         side: str,
-        size: float,
-        price: float,
+        size: Decimal,
+        price: Decimal,
         round_config: RoundConfig,
     ):
         raw_price = round_normal(price, round_config.price)
@@ -94,8 +96,8 @@ class OrderBuilder:
     def get_market_order_amounts(
         self,
         side: str,
-        amount: float,
-        price: float,
+        amount: Decimal,
+        price: Decimal,
         round_config: RoundConfig,
     ):
         raw_price = round_normal(price, round_config.price)
@@ -214,45 +216,45 @@ class OrderBuilder:
         asks: list[
             OrderSummary
         ],  # expected to be sorted from worst to best price (high to low)
-        amount_to_match: float,  # in usdc
+        amount_to_match: Decimal,  # in usdc
         order_type: OrderType,
-    ) -> float:
+    ) -> Decimal:
         if not asks:
             msg = "No ask orders available"
             raise LiquidityError(msg)
 
-        amount = 0.0
+        amount = Decimal("0.0")
         for p in reversed(asks):
-            amount += float(p.size) * float(p.price)
+            amount += Decimal(p.size) * Decimal(p.price)
             if amount >= amount_to_match:
-                return float(p.price)
+                return Decimal(p.price)
 
         if order_type == OrderType.FOK:
             msg = "no match"
             raise ValueError(msg)
 
-        return float(asks[0].price)
+        return Decimal(asks[0].price)
 
     def calculate_sell_market_price(
         self,
         bids: list[
             OrderSummary
         ],  # expected to be sorted from worst to best price (low to high)
-        amount_to_match: float,  # in shares
+        amount_to_match: Decimal,  # in shares
         order_type: OrderType,
-    ) -> float:
+    ) -> Decimal:
         if not bids:
             msg = "No bid orders available"
             raise LiquidityError(msg)
 
-        amount = 0.0
+        amount = Decimal("0.0")
         for p in reversed(bids):
-            amount += float(p.size)
+            amount += Decimal(p.size)
             if amount >= amount_to_match:
-                return float(p.price)
+                return Decimal(p.price)
 
         if order_type == OrderType.FOK:
             msg = "no match"
             raise ValueError(msg)
 
-        return float(bids[0].price)
+        return Decimal(bids[0].price)
