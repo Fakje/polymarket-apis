@@ -5,8 +5,6 @@ from decimal import Decimal
 from typing import Literal, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     Json,
     ValidationInfo,
@@ -14,13 +12,11 @@ from pydantic import (
     field_validator,
 )
 
-from .common import EthAddress, FlexibleDatetime, Keccak256
+from .common import Base, EthAddress, FlexibleDatetime, Keccak256
 
 
-class OptimizedImage(BaseModel):
+class OptimizedImage(Base):
     """Optimized image data."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     image_url_source: Optional[str] = Field(None, alias="imageUrlSource")
@@ -38,10 +34,8 @@ class OptimizedImage(BaseModel):
     relname: Optional[str] = Field(None, alias="relname")
 
 
-class GammaMarket(BaseModel):
+class GammaMarket(Base):
     """Market model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     condition_id: Optional[Keccak256] = Field(None, alias="conditionId")
@@ -221,10 +215,8 @@ class GammaMarket(BaseModel):
             raise
 
 
-class Series(BaseModel):
+class Series(Base):
     """Series model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     ticker: Optional[str] = Field(None, alias="ticker")
@@ -267,10 +259,8 @@ class Series(BaseModel):
     chats: Optional[list[Chat]] = Field(None, alias="chats")
 
 
-class Category(BaseModel):
+class Category(Base):
     """Category model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     label: Optional[str] = Field(None, alias="label")
@@ -283,10 +273,8 @@ class Category(BaseModel):
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
 
 
-class Tag(BaseModel):
+class Tag(Base):
     """Tag model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     label: Optional[str] = Field(None, alias="label")
@@ -301,10 +289,8 @@ class Tag(BaseModel):
     is_carousel: Optional[bool] = Field(None, alias="isCarousel")
 
 
-class TagRelation(BaseModel):
+class TagRelation(Base):
     """Tag relation model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: int = Field(alias="id")
     tag_id: int = Field(alias="tagID")
@@ -312,10 +298,8 @@ class TagRelation(BaseModel):
     rank: int
 
 
-class Chat(BaseModel):
+class Chat(Base):
     """Chat model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     channel_id: Optional[str] = Field(None, alias="channelId")
@@ -326,10 +310,8 @@ class Chat(BaseModel):
     end_time: Optional[datetime] = Field(None, alias="endTime")
 
 
-class Collection(BaseModel):
+class Collection(Base):
     """Collection model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     ticker: Optional[str] = Field(None, alias="ticker")
@@ -364,10 +346,8 @@ class Collection(BaseModel):
     )
 
 
-class Creator(BaseModel):
+class Creator(Base):
     """Event Creator model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     creator_name: Optional[str] = Field(None, alias="creatorName")
@@ -378,10 +358,8 @@ class Creator(BaseModel):
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
 
 
-class Template(BaseModel):
+class Template(Base):
     """Template model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: Optional[str] = Field(None, alias="id")
     event_title: Optional[str] = Field(None, alias="eventTitle")
@@ -397,10 +375,8 @@ class Template(BaseModel):
     outcomes: Optional[str] = Field(None, alias="outcomes")
 
 
-class ClobReward(BaseModel):
+class ClobReward(Base):
     """Reward model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: int
     condition_id: Keccak256 = Field(alias="conditionId")
@@ -411,10 +387,8 @@ class ClobReward(BaseModel):
     end_date: datetime = Field(alias="endDate")
 
 
-class Team(BaseModel):
+class Team(Base):
     """Team model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: int
     name: str
@@ -427,10 +401,8 @@ class Team(BaseModel):
     updated_at: Optional[datetime] = Field(None, alias="updatedAt")
 
 
-class Sport(BaseModel):
+class Sport(Base):
     """Sport model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     sport: str
     image: Optional[str] = None
@@ -447,10 +419,8 @@ class Sport(BaseModel):
         return v
 
 
-class Event(BaseModel):
+class Event(Base):
     """Event model."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     id: int = Field(alias="id")
     ticker: Optional[str] = Field(None, alias="ticker")
@@ -549,9 +519,7 @@ class Event(BaseModel):
     game_status: Optional[str] = Field(None, alias="gameStatus")
 
 
-class ProfilePosition(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class ProfilePosition(Base):
     token_id: int = Field(alias="tokenId")
     size: Optional[Decimal] = Field(None, alias="positionSize")
 
@@ -563,9 +531,7 @@ class ProfilePosition(BaseModel):
         return v
 
 
-class Profile(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class Profile(Base):
     name: Optional[str] = None
     pseudonym: Optional[str] = None
     display_username_public: Optional[bool] = Field(None, alias="displayUsernamePublic")
@@ -575,9 +541,7 @@ class Profile(BaseModel):
     positions: Optional[list[ProfilePosition]] = Field(None, alias="positions")
 
 
-class Comment(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class Comment(Base):
     id: str
     body: str
     parent_entity_type: Literal["Event", "Series", "market"] = Field(
@@ -595,9 +559,7 @@ class Comment(BaseModel):
     reaction_count: Optional[int] = Field(None, alias="reactionCount")
 
 
-class Reaction(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class Reaction(Base):
     id: str
     comment_id: int = Field(alias="commentID")
     reaction_type: str = Field(alias="reactionType")
@@ -607,14 +569,12 @@ class Reaction(BaseModel):
     profile: Optional[Profile] = None
 
 
-class Pagination(BaseModel):
+class Pagination(Base):
     has_more: bool = Field(alias="hasMore")
     total_results: int = Field(alias="totalResults")
 
 
-class SearchResult(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class SearchResult(Base):
     events: Optional[list[Event]] = None
     tags: Optional[list[Tag]] = None
     profiles: Optional[list[Profile]] = None

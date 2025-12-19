@@ -1,11 +1,11 @@
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
-from ..types.common import EthAddress, HexString, Keccak256OrPadded
+from ..types.common import Base, EthAddress, HexString, Keccak256OrPadded
 
 
-class TransactionLog(BaseModel):
+class TransactionLog(Base):
     """Log entry in a transaction receipt."""
 
     address: EthAddress
@@ -20,10 +20,8 @@ class TransactionLog(BaseModel):
     removed: bool
 
 
-class TransactionReceipt(BaseModel):
+class TransactionReceipt(Base):
     """Transaction receipt from the blockchain."""
-
-    model_config = ConfigDict(populate_by_name=True)
 
     tx_hash: HexString = Field(alias="transactionHash")
     tx_index: int = Field(alias="transactionIndex")

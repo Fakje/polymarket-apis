@@ -8,6 +8,14 @@ from hexbytes import HexBytes
 from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict, Field
 
 
+class Base(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+        from_attributes=True,
+        strict=False,
+    )
+
+
 def parse_flexible_datetime(v: str | datetime) -> datetime:
     """Parse datetime from multiple formats using dateutil."""
     if v in {"NOW*()", "NOW()"}:
@@ -115,8 +123,6 @@ Keccak256OrPadded = Annotated[str, BeforeValidator(validate_keccak_or_padded)]
 EmptyString = Annotated[str, Field(pattern=r"^$", description="An empty string")]
 
 
-class TimeseriesPoint(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class TimeseriesPoint(Base):
     value: Decimal = Field(alias="p")
     timestamp: datetime = Field(alias="t")

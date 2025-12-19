@@ -2,12 +2,12 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
-from .common import EmptyString, EthAddress, Keccak256
+from .common import Base, EmptyString, EthAddress, Keccak256
 
 
-class GQLPosition(BaseModel):
+class GQLPosition(Base):
     user: EthAddress
     token_id: str
     complementary_token_id: str
@@ -39,7 +39,7 @@ class GQLPosition(BaseModel):
         return Decimal(value) / Decimal(10**6)
 
 
-class Position(BaseModel):
+class Position(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
@@ -81,7 +81,7 @@ class Position(BaseModel):
         return v
 
 
-class Trade(BaseModel):
+class Trade(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
@@ -112,7 +112,7 @@ class Trade(BaseModel):
     transaction_hash: Keccak256 = Field(alias="transactionHash")
 
 
-class Activity(BaseModel):
+class Activity(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
@@ -145,7 +145,7 @@ class Activity(BaseModel):
     transaction_hash: Keccak256 = Field(alias="transactionHash")
 
 
-class Holder(BaseModel):
+class Holder(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
@@ -163,7 +163,7 @@ class Holder(BaseModel):
     display_username_public: bool = Field(alias="displayUsernamePublic")
 
 
-class HolderResponse(BaseModel):
+class HolderResponse(Base):
     # Asset information
     token_id: str = Field(alias="token")
 
@@ -171,7 +171,7 @@ class HolderResponse(BaseModel):
     holders: list[Holder]
 
 
-class ValueResponse(BaseModel):
+class ValueResponse(Base):
     # User identification
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
 
@@ -179,7 +179,7 @@ class ValueResponse(BaseModel):
     value: Decimal
 
 
-class User(BaseModel):
+class User(Base):
     proxy_wallet: EthAddress = Field(alias="proxyWallet")
     name: str
     bio: str
@@ -197,11 +197,11 @@ class UserRank(User):
     rank: int
 
 
-class MarketValue(BaseModel):
+class MarketValue(Base):
     condition_id: Keccak256 = Field(alias="market")
     value: Decimal
 
 
-class EventLiveVolume(BaseModel):
+class EventLiveVolume(Base):
     total: Optional[Decimal]
     markets: Optional[list[MarketValue]]

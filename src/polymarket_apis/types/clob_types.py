@@ -6,7 +6,6 @@ from typing import Any, Literal, Optional, TypeVar, Union
 
 from py_order_utils.model import SignedOrder
 from pydantic import (
-    BaseModel,
     ConfigDict,
     Field,
     RootModel,
@@ -17,27 +16,25 @@ from pydantic import (
     field_validator,
 )
 
-from ..types.common import EthAddress, Keccak256, TimeseriesPoint
+from ..types.common import Base, EthAddress, Keccak256, TimeseriesPoint
 from ..utilities.constants import ADDRESS_ZERO
 
 logger = logging.getLogger(__name__)
 
 
-class ApiCreds(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class ApiCreds(Base):
     key: str = Field(alias="apiKey")
     secret: str
     passphrase: str
 
 
-class RequestArgs(BaseModel):
+class RequestArgs(Base):
     method: Literal["GET", "POST", "DELETE"]
     request_path: str
     body: Any = None
 
 
-class TokenValue(BaseModel):
+class TokenValue(Base):
     token_id: str
     value: Decimal
 
@@ -54,7 +51,7 @@ class TokenValueDict(RootModel):
     root: dict[str, Decimal]
 
 
-class BookParams(BaseModel):
+class BookParams(Base):
     token_id: str
     side: Literal["BUY", "SELL"]
 
@@ -63,7 +60,7 @@ class Price(BookParams):
     price: Decimal
 
 
-class BidAsk(BaseModel):
+class BidAsk(Base):
     BUY: Optional[Decimal] = None  # Price buyers are willing to pay
     SELL: Optional[Decimal] = None  # Price sellers are willing to accept
 
@@ -76,14 +73,14 @@ class TokenBidAskDict(RootModel):
     root: dict[str, BidAsk]
 
 
-class Token(BaseModel):
+class Token(Base):
     token_id: str
     outcome: str
     price: Decimal
     winner: Optional[bool] = None
 
 
-class PriceHistory(BaseModel):
+class PriceHistory(Base):
     token_id: str
     history: list[TimeseriesPoint]
 
@@ -91,19 +88,19 @@ class PriceHistory(BaseModel):
 T = TypeVar("T")
 
 
-class PaginatedResponse[T](BaseModel):
+class PaginatedResponse[T](Base):
     data: list[T]
     next_cursor: str
     limit: int
     count: int
 
 
-class RewardRate(BaseModel):
+class RewardRate(Base):
     asset_address: str
     rewards_daily_rate: Decimal
 
 
-class RewardConfig(BaseModel):
+class RewardConfig(Base):
     asset_address: str
     rewards_daily_rate: Decimal = Field(alias="rate_per_day")
 
@@ -121,19 +118,19 @@ class RewardConfig(BaseModel):
         return v
 
 
-class Rewards(BaseModel):
+class Rewards(Base):
     rates: Optional[list[RewardRate]]
     rewards_min_size: int = Field(alias="min_size")
     rewards_max_spread: Decimal = Field(alias="max_spread")
 
 
-class EarnedReward(BaseModel):
+class EarnedReward(Base):
     asset_address: EthAddress
     earnings: Decimal
     asset_rate: Decimal
 
 
-class DailyEarnedReward(BaseModel):
+class DailyEarnedReward(Base):
     date: datetime
     asset_address: EthAddress
     maker_address: EthAddress
@@ -141,7 +138,7 @@ class DailyEarnedReward(BaseModel):
     asset_rate: Decimal
 
 
-class RewardMarket(BaseModel):
+class RewardMarket(Base):
     market_id: str
     condition_id: Keccak256
     question: str
@@ -159,7 +156,7 @@ class RewardMarket(BaseModel):
     market_competitiveness: Decimal
 
 
-class MarketRewards(BaseModel):
+class MarketRewards(Base):
     condition_id: Keccak256
     question: str
     market_slug: str
@@ -172,7 +169,7 @@ class MarketRewards(BaseModel):
     market_competitiveness: Decimal
 
 
-class ClobMarket(BaseModel):
+class ClobMarket(Base):
     # Core market information
     token_ids: list[Token] = Field(alias="tokens")
     condition_id: Keccak256
@@ -257,7 +254,7 @@ class ClobMarket(BaseModel):
             raise
 
 
-class OpenOrder(BaseModel):
+class OpenOrder(Base):
     order_id: Keccak256 = Field(alias="id")
     status: str
     owner: str
@@ -275,7 +272,7 @@ class OpenOrder(BaseModel):
     created_at: datetime
 
 
-class MakerOrder(BaseModel):
+class MakerOrder(Base):
     token_id: str = Field(alias="asset_id")
     order_id: Keccak256
     maker_address: EthAddress
@@ -286,7 +283,7 @@ class MakerOrder(BaseModel):
     fee_rate_bps: Decimal
 
 
-class PolygonTrade(BaseModel):
+class PolygonTrade(Base):
     trade_id: str = Field(alias="id")
     taker_order_id: Keccak256
     condition_id: Keccak256 = Field(alias="market")
@@ -307,7 +304,7 @@ class PolygonTrade(BaseModel):
     trader_side: Literal["TAKER", "MAKER"]
 
 
-class TradeParams(BaseModel):
+class TradeParams(Base):
     id: Optional[str] = None
     maker_address: Optional[str] = None
     market: Optional[str] = None
@@ -316,17 +313,17 @@ class TradeParams(BaseModel):
     after: Optional[int] = None
 
 
-class OpenOrderParams(BaseModel):
+class OpenOrderParams(Base):
     order_id: Optional[str] = None
     condition_id: Optional[str] = None
     token_id: Optional[str] = None
 
 
-class DropNotificationParams(BaseModel):
+class DropNotificationParams(Base):
     ids: Optional[list[str]] = None
 
 
-class OrderSummary(BaseModel):
+class OrderSummary(Base):
     price: Decimal
     size: Decimal
 
@@ -335,7 +332,7 @@ class PriceLevel(OrderSummary):
     side: Literal["BUY", "SELL"]
 
 
-class OrderBookSummary(BaseModel):
+class OrderBookSummary(Base):
     condition_id: Optional[Keccak256] = Field(None, alias="market")
     token_id: Optional[str] = Field(None, alias="asset_id")
     timestamp: Optional[datetime] = None
@@ -364,7 +361,7 @@ class AssetType(str, Enum):
     CONDITIONAL = "CONDITIONAL"
 
 
-class BalanceAllowanceParams(BaseModel):
+class BalanceAllowanceParams(Base):
     asset_type: Optional[AssetType] = None
     token_id: Optional[str] = None
     signature_type: int = -1
@@ -380,23 +377,23 @@ class OrderType(str, Enum):
 TickSize = Literal["0.1", "0.01", "0.001", "0.0001"]
 
 
-class CreateOrderOptions(BaseModel):
+class CreateOrderOptions(Base):
     tick_size: TickSize
     neg_risk: bool
 
 
-class PartialCreateOrderOptions(BaseModel):
+class PartialCreateOrderOptions(Base):
     tick_size: Optional[TickSize] = None
     neg_risk: Optional[bool] = None
 
 
-class RoundConfig(BaseModel):
+class RoundConfig(Base):
     price: int
     size: int
     amount: int
 
 
-class OrderArgs(BaseModel):
+class OrderArgs(Base):
     token_id: str
     """
     TokenID of the Conditional token asset being traded
@@ -438,7 +435,7 @@ class OrderArgs(BaseModel):
     """
 
 
-class MarketOrderArgs(BaseModel):
+class MarketOrderArgs(Base):
     token_id: str
     """
     TokenID of the Conditional token asset being traded
@@ -478,14 +475,14 @@ class MarketOrderArgs(BaseModel):
     order_type: OrderType = OrderType.FOK
 
 
-class PostOrdersArgs(BaseModel):
+class PostOrdersArgs(Base):
     order: SignedOrder
     order_type: OrderType = OrderType.GTC
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
-class ContractConfig(BaseModel):
+class ContractConfig(Base):
     """Contract Configuration."""
 
     exchange: EthAddress
@@ -504,7 +501,7 @@ class ContractConfig(BaseModel):
     """
 
 
-class OrderPostResponse(BaseModel):
+class OrderPostResponse(Base):
     error_msg: str = Field(alias="errorMsg")
     order_id: Union[Keccak256, Literal[""]] = Field(alias="orderID")
     taking_amount: str = Field(alias="takingAmount")
@@ -513,6 +510,6 @@ class OrderPostResponse(BaseModel):
     success: bool
 
 
-class OrderCancelResponse(BaseModel):
+class OrderCancelResponse(Base):
     not_canceled: Optional[dict[Keccak256, str]]
     canceled: Optional[list[Keccak256]]
