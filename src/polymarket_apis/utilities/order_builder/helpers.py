@@ -4,29 +4,29 @@ from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal
 from ...types.clob_types import OrderBookSummary, TickSize
 
 
-def round_down(x: float, sig_digits: int) -> float:
+def round_down(x: Decimal, sig_digits: int) -> Decimal:
     exp = Decimal(1).scaleb(-sig_digits)
-    return float(Decimal(str(x)).quantize(exp=exp, rounding=ROUND_FLOOR))
+    return Decimal(str(x)).quantize(exp=exp, rounding=ROUND_FLOOR)
 
 
-def round_normal(x: float, sig_digits: int) -> float:
+def round_normal(x: Decimal, sig_digits: int) -> Decimal:
     exp = Decimal(1).scaleb(-sig_digits)
-    return float(Decimal(str(x)).quantize(exp=exp, rounding=ROUND_HALF_UP))
+    return Decimal(str(x)).quantize(exp=exp, rounding=ROUND_HALF_UP)
 
 
-def round_up(x: float, sig_digits: int) -> float:
+def round_up(x: Decimal, sig_digits: int) -> Decimal:
     exp = Decimal(1).scaleb(-sig_digits)
-    return float(Decimal(str(x)).quantize(exp=exp, rounding=ROUND_CEILING))
+    return Decimal(str(x)).quantize(exp=exp, rounding=ROUND_CEILING)
 
 
-def to_token_decimals(x: float) -> int:
+def to_token_decimals(x: Decimal) -> int:
     exp = Decimal(1)
     return int(
-        Decimal(str(x)) * Decimal(10**6).quantize(exp=exp, rounding=ROUND_HALF_UP),
+        Decimal(str(x)) * Decimal(10 ** 6).quantize(exp=exp, rounding=ROUND_HALF_UP),
     )
 
 
-def decimal_places(x: float) -> int:
+def decimal_places(x: Decimal) -> int:
     """
     Returns the number of decimal places in a numeric value.
 
@@ -34,7 +34,7 @@ def decimal_places(x: float) -> int:
     """
     exponent = Decimal(str(x)).as_tuple().exponent
     if not isinstance(exponent, int):
-        msg = "Input must be a finite float."
+        msg = "Input must be a finite Decimal."
         raise TypeError(msg)
     return max(0, -exponent)
 
@@ -55,8 +55,8 @@ def order_to_json(order, owner, order_type) -> dict:
 
 
 def is_tick_size_smaller(a: TickSize, b: TickSize) -> bool:
-    return float(a) < float(b)
+    return Decimal(a) < Decimal(b)
 
 
-def price_valid(price: float, tick_size: TickSize) -> bool:
-    return float(tick_size) <= price <= 1 - float(tick_size)
+def price_valid(price: Decimal, tick_size: TickSize) -> bool:
+    return Decimal(tick_size) <= price <= 1 - Decimal(tick_size)

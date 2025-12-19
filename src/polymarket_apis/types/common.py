@@ -1,5 +1,6 @@
 import re
 from datetime import UTC, datetime
+from decimal import Decimal
 from typing import Annotated, Any
 
 from dateutil import parser
@@ -117,5 +118,5 @@ EmptyString = Annotated[str, Field(pattern=r"^$", description="An empty string")
 class TimeseriesPoint(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    value: float = Field(alias="p")
+    value: Decimal = Field(alias="p")
     timestamp: datetime = Field(alias="t")

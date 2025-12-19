@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal, Optional
 
 from pydantic import AliasChoices, BaseModel, Field, field_validator
@@ -11,10 +12,10 @@ from ..types.gamma_types import Comment, Reaction
 
 
 class PriceChange(BaseModel):
-    best_ask: float = Field(validation_alias=AliasChoices("ba", "best_ask"))
-    best_bid: float = Field(validation_alias=AliasChoices("bb", "best_bid"))
-    price: float = Field(validation_alias=AliasChoices("p", "price"))
-    size: float = Field(validation_alias=AliasChoices("s", "size"))
+    best_ask: Decimal = Field(validation_alias=AliasChoices("ba", "best_ask"))
+    best_bid: Decimal = Field(validation_alias=AliasChoices("bb", "best_bid"))
+    price: Decimal = Field(validation_alias=AliasChoices("p", "price"))
+    size: Decimal = Field(validation_alias=AliasChoices("s", "size"))
     side: Literal["BUY", "SELL"] = Field(validation_alias=AliasChoices("si", "side"))
     token_id: str = Field(validation_alias=AliasChoices("a", "asset_id"))
     hash: str = Field(validation_alias=AliasChoices("h", "hash"))
@@ -36,12 +37,12 @@ class TickSizeChange(BaseModel):
 
 
 class LastTradePrice(BaseModel):
-    price: float
-    size: float
+    price: Decimal
+    size: Decimal
     side: Literal["BUY", "SELL"]
     token_id: str = Field(alias="asset_id")
     condition_id: Keccak256 = Field(alias="market")
-    fee_rate_bps: float
+    fee_rate_bps: Decimal
 
 
 class OrderBookSummaryEvent(OrderBookSummary):
@@ -75,10 +76,10 @@ class OrderEvent(BaseModel):
     order_owner: str = Field(alias="owner")  # api key of order owner
     event_owner: Optional[str] = Field(None, alias="owner")  # api key of event owner
 
-    price: float
+    price: Decimal
     side: Literal["BUY", "SELL"]
-    size_matched: float
-    original_size: float
+    size_matched: Decimal
+    original_size: Decimal
     outcome: str
     order_type: Literal["GTC", "GTD", "FOK", "FAK"]
 
@@ -107,8 +108,8 @@ class TradeEvent(BaseModel):
     trade_owner: Optional[str] = Field(None, alias="owner")  # api key of trade owner
     event_owner: str = Field(alias="owner")  # api key of event owner
 
-    price: float
-    size: float
+    price: Decimal
+    size: Decimal
     side: Literal["BUY", "SELL"]
     outcome: str
 
@@ -136,9 +137,9 @@ class ActivityTrade(BaseModel):
     event_slug: str = Field(alias="eventSlug")  # Slug of the event
     outcome: str  # Human readable outcome of the market
     outcome_index: int = Field(alias="outcomeIndex")  # Index of the outcome
-    price: float  # Price of the trade
+    price: Decimal  # Price of the trade
     side: Literal["BUY", "SELL"]  # Side of the trade
-    size: float  # Size of the trade
+    size: Decimal  # Size of the trade
     slug: str  # Slug of the market
     timestamp: datetime  # Timestamp of the trade
     title: str  # Title of the event
@@ -175,9 +176,9 @@ class Request(BaseModel):
         "STATE_QUOTE_IMPROVED",
     ]  # Current state of the request
     side: Literal["BUY", "SELL"]  # Indicates buy or sell side
-    price: float  # Price from in/out sizes
-    size_in: float = Field(alias="sizeIn")  # Input size of the request
-    size_out: float = Field(alias="sizeOut")  # Output size of the request
+    price: Decimal  # Price from in/out sizes
+    size_in: Decimal = Field(alias="sizeIn")  # Input size of the request
+    size_out: Decimal = Field(alias="sizeOut")  # Output size of the request
     expiry: Optional[datetime] = None
 
 
@@ -205,8 +206,8 @@ class Quote(BaseModel):
         "STATE_QUOTE_IMPROVED",
     ]  # Current state of the quote
     side: Literal["BUY", "SELL"]  # Indicates buy or sell side
-    size_in: float = Field(alias="sizeIn")  # Input size of the quote
-    size_out: float = Field(alias="sizeOut")  # Output size of the quote
+    size_in: Decimal = Field(alias="sizeIn")  # Input size of the quote
+    size_out: Decimal = Field(alias="sizeOut")  # Output size of the quote
     expiry: Optional[datetime] = None
 
 
@@ -221,7 +222,7 @@ class CryptoPriceUpdate(TimeseriesPoint):
 
 
 class AggOrderBookSummary(OrderBookSummary):
-    min_order_size: float
+    min_order_size: Decimal
     tick_size: TickSize
     neg_risk: bool
 
@@ -229,7 +230,7 @@ class AggOrderBookSummary(OrderBookSummary):
 class LiveDataClobMarket(BaseModel):
     token_ids: list[str] = Field(alias="asset_ids")
     condition_id: Keccak256 = Field(alias="market")
-    min_order_size: float
+    min_order_size: Decimal
     tick_size: TickSize
     neg_risk: bool
 

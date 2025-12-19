@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 from typing import Any, Literal, Optional, TypeVar, Union
 
@@ -38,7 +39,7 @@ class RequestArgs(BaseModel):
 
 class TokenValue(BaseModel):
     token_id: str
-    value: float
+    value: Decimal
 
 
 class Midpoint(TokenValue):
@@ -50,7 +51,7 @@ class Spread(TokenValue):
 
 
 class TokenValueDict(RootModel):
-    root: dict[str, float]
+    root: dict[str, Decimal]
 
 
 class BookParams(BaseModel):
@@ -59,12 +60,12 @@ class BookParams(BaseModel):
 
 
 class Price(BookParams):
-    price: float
+    price: Decimal
 
 
 class BidAsk(BaseModel):
-    BUY: Optional[float] = None  # Price buyers are willing to pay
-    SELL: Optional[float] = None  # Price sellers are willing to accept
+    BUY: Optional[Decimal] = None  # Price buyers are willing to pay
+    SELL: Optional[Decimal] = None  # Price sellers are willing to accept
 
 
 class TokenBidAsk(BidAsk):
@@ -78,7 +79,7 @@ class TokenBidAskDict(RootModel):
 class Token(BaseModel):
     token_id: str
     outcome: str
-    price: float
+    price: Decimal
     winner: Optional[bool] = None
 
 
@@ -99,18 +100,18 @@ class PaginatedResponse[T](BaseModel):
 
 class RewardRate(BaseModel):
     asset_address: str
-    rewards_daily_rate: float
+    rewards_daily_rate: Decimal
 
 
 class RewardConfig(BaseModel):
     asset_address: str
-    rewards_daily_rate: float = Field(alias="rate_per_day")
+    rewards_daily_rate: Decimal = Field(alias="rate_per_day")
 
     start_date: datetime
     end_date: datetime
 
     reward_id: Optional[str] = Field(None, alias="id")
-    total_rewards: float
+    total_rewards: Decimal
     total_days: Optional[int] = None
 
     @field_validator("reward_id", mode="before")
@@ -123,21 +124,21 @@ class RewardConfig(BaseModel):
 class Rewards(BaseModel):
     rates: Optional[list[RewardRate]]
     rewards_min_size: int = Field(alias="min_size")
-    rewards_max_spread: float = Field(alias="max_spread")
+    rewards_max_spread: Decimal = Field(alias="max_spread")
 
 
 class EarnedReward(BaseModel):
     asset_address: EthAddress
-    earnings: float
-    asset_rate: float
+    earnings: Decimal
+    asset_rate: Decimal
 
 
 class DailyEarnedReward(BaseModel):
     date: datetime
     asset_address: EthAddress
     maker_address: EthAddress
-    earnings: float
-    asset_rate: float
+    earnings: Decimal
+    asset_rate: Decimal
 
 
 class RewardMarket(BaseModel):
@@ -151,11 +152,11 @@ class RewardMarket(BaseModel):
     tokens: list[Token]
     rewards_config: list[RewardConfig]
     earnings: list[EarnedReward]
-    rewards_max_spread: float
-    rewards_min_size: float
-    earning_percentage: float
-    spread: float
-    market_competitiveness: float
+    rewards_max_spread: Decimal
+    rewards_min_size: Decimal
+    earning_percentage: Decimal
+    spread: Decimal
+    market_competitiveness: Decimal
 
 
 class MarketRewards(BaseModel):
@@ -166,9 +167,9 @@ class MarketRewards(BaseModel):
     image: str
     tokens: list[Token]
     rewards_config: list[RewardConfig]
-    rewards_max_spread: float
+    rewards_max_spread: Decimal
     rewards_min_size: int
-    market_competitiveness: float
+    market_competitiveness: Decimal
 
 
 class ClobMarket(BaseModel):
@@ -187,8 +188,8 @@ class ClobMarket(BaseModel):
     enable_order_book: bool
     accepting_orders: bool
     accepting_order_timestamp: Optional[datetime]
-    minimum_order_size: float
-    minimum_tick_size: float
+    minimum_order_size: Decimal
+    minimum_tick_size: Decimal
 
     # Status flags
     active: bool
@@ -202,8 +203,8 @@ class ClobMarket(BaseModel):
 
     # Fee structure
     fpmm: str
-    maker_base_fee: float
-    taker_base_fee: float
+    maker_base_fee: Decimal
+    taker_base_fee: Decimal
 
     # Features
     notifications_enabled: bool
@@ -264,9 +265,9 @@ class OpenOrder(BaseModel):
     condition_id: str = Field(alias="market")
     token_id: str = Field(alias="asset_id")
     side: Literal["BUY", "SELL"]
-    original_size: float
-    size_matched: float
-    price: float
+    original_size: Decimal
+    size_matched: Decimal
+    price: Decimal
     outcome: str
     expiration: datetime
     order_type: Literal["GTC", "GTD"]
@@ -279,10 +280,10 @@ class MakerOrder(BaseModel):
     order_id: Keccak256
     maker_address: EthAddress
     owner: str
-    matched_amount: float
-    price: float
+    matched_amount: Decimal
+    price: Decimal
     outcome: str
-    fee_rate_bps: float
+    fee_rate_bps: Decimal
 
 
 class PolygonTrade(BaseModel):
@@ -291,9 +292,9 @@ class PolygonTrade(BaseModel):
     condition_id: Keccak256 = Field(alias="market")
     id: str
     side: Literal["BUY", "SELL"]
-    size: float
-    fee_rate_bps: float
-    price: float
+    size: Decimal
+    fee_rate_bps: Decimal
+    price: Decimal
     status: str  # change to literals MINED, CONFIRMED
     match_time: datetime
     last_update: datetime
@@ -326,8 +327,8 @@ class DropNotificationParams(BaseModel):
 
 
 class OrderSummary(BaseModel):
-    price: float
-    size: float
+    price: Decimal
+    size: Decimal
 
 
 class PriceLevel(OrderSummary):
@@ -401,12 +402,12 @@ class OrderArgs(BaseModel):
     TokenID of the Conditional token asset being traded
     """
 
-    price: float
+    price: Decimal
     """
     Price used to create the order
     """
 
-    size: float
+    size: Decimal
     """
     Size in terms of the ConditionalToken
     """
@@ -443,7 +444,7 @@ class MarketOrderArgs(BaseModel):
     TokenID of the Conditional token asset being traded
     """
 
-    amount: float
+    amount: Decimal
     """
     BUY orders: $$$ Amount to buy
     SELL orders: Shares to sell
@@ -454,7 +455,7 @@ class MarketOrderArgs(BaseModel):
     Side of the order
     """
 
-    price: float = 0
+    price: Decimal = 0
     """
     Price used to create the order
     """

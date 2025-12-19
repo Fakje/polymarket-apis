@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from typing import Literal, cast
 from urllib.parse import urljoin
 
@@ -282,7 +283,7 @@ class PolymarketClobClient:
         params = {"token_id": token_id}
         response = self.client.get(self._build_url(MID_POINT), params=params)
         response.raise_for_status()
-        return Midpoint(token_id=token_id, value=float(response.json()["mid"]))
+        return Midpoint(token_id=token_id, value=Decimal(response.json()["mid"]))
 
     def get_midpoints(self, token_ids: list[str]) -> dict:
         """Get the mid-market prices for a set of tokens."""
@@ -296,7 +297,7 @@ class PolymarketClobClient:
         params = {"token_id": token_id}
         response = self.client.get(self._build_url(GET_SPREAD), params=params)
         response.raise_for_status()
-        return Spread(token_id=token_id, value=float(response.json()["mid"]))
+        return Spread(token_id=token_id, value=Decimal(response.json()["mid"]))
 
     def get_spreads(self, token_ids: list[str]) -> dict:
         """Get the spreads for a set of tokens."""
@@ -461,7 +462,7 @@ class PolymarketClobClient:
             start_time=datetime(2020, 1, 1, tzinfo=UTC),
         )
 
-    def get_usdc_balance(self) -> float:
+    def get_usdc_balance(self) -> Decimal:
         params = {
             "asset_type": "COLLATERAL",
             "signature_type": self.signature_type,
@@ -472,9 +473,9 @@ class PolymarketClobClient:
             self._build_url(GET_BALANCE_ALLOWANCE), headers=headers, params=params
         )
         response.raise_for_status()
-        return int(response.json()["balance"]) / 10**6
+        return Decimal(response.json()["balance"]) / Decimal(10**6)
 
-    def get_token_balance(self, token_id: str) -> float:
+    def get_token_balance(self, token_id: str) -> Decimal:
         params = {
             "asset_type": "CONDITIONAL",
             "token_id": token_id,
@@ -486,7 +487,7 @@ class PolymarketClobClient:
             self._build_url(GET_BALANCE_ALLOWANCE), headers=headers, params=params
         )
         response.raise_for_status()
-        return int(response.json()["balance"]) / 10**6
+        return Decimal(response.json()["balance"]) / Decimal(10**6)
 
     def get_orders(
         self,
@@ -531,7 +532,7 @@ class PolymarketClobClient:
         )
 
         if not price_valid(order_args.price, tick_size):
-            msg = f"price ({order_args.price}), min: {tick_size} - max: {1 - float(tick_size)}"
+            msg = f"price ({order_args.price}), min: {tick_size} - max: {1 - Decimal(tick_size)}"
             raise InvalidPriceError(msg)
 
         neg_risk = (
@@ -641,8 +642,8 @@ class PolymarketClobClient:
         )
 
     def calculate_market_price(
-        self, token_id: str, side: str, amount: float, order_type: OrderType
-    ) -> float:
+        self, token_id: str, side: str, amount: Decimal, order_type: OrderType
+    ) -> Decimal:
         """Calculates the matching price considering an amount and the current orderbook."""
         book = self.get_order_book(token_id)
         if book is None:
@@ -689,7 +690,7 @@ class PolymarketClobClient:
             )
 
         if not price_valid(order_args.price, tick_size):
-            msg = f"price ({order_args.price}), min: {tick_size} - max: {1 - float(tick_size)}"
+            msg = f"price ({order_args.price}), min: {tick_size} - max: {1 - Decimal(tick_size)}"
             raise InvalidPriceError(msg)
 
         neg_risk = (
@@ -876,8 +877,8 @@ class PolymarketClobClient:
             date=date,
             asset_address="0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
             maker_address=self.address,
-            earnings=0.0,
-            asset_rate=0.0,
+            earnings=Decimal("0.0"),
+            asset_rate=Decimal("0.0"),
         )
 
     def get_reward_markets(
