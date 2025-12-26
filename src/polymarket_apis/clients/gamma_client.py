@@ -1,9 +1,7 @@
 import json
 import random
 import string
-from datetime import datetime
-from decimal import Decimal
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 from urllib.parse import urljoin
 
 import httpx
@@ -20,6 +18,7 @@ from ..types.gamma_types import (
     TagRelation,
     Team,
     MarketSearchArgs,
+    EventSearchArgs,
 )
 
 
@@ -106,21 +105,22 @@ class PolymarketGammaClient:
 
     def get_markets(
             self,
-            search_args: MarketSearchArgs,
-            limit: int | None = None,
-            offset: int | None = None,
+            search_args: Optional[MarketSearchArgs] = None,
+            limit: Optional[int] = None,
+            offset: Optional[int] = None,
+            **kwargs,
     ) -> list[GammaMarket]:
-        params = search_args.model_dump(exclude_none=True, by_alias=True)
+        if search_args:
+            final_search_args = search_args
+        else:
+            final_search_args = MarketSearchArgs(**kwargs)
+
+        params = final_search_args.model_dump(exclude_none=True, by_alias=True, mode='json')
 
         if limit:
             params["limit"] = limit
         if offset:
             params["offset"] = offset
-
-        # Handle datetime to isoformat conversion
-        for key in ["start_date_min", "start_date_max", "end_date_min", "end_date_max"]:
-            if key in params and isinstance(params[key], datetime):
-                params[key] = params[key].strftime('%Y-%m-%dT%H:%M:%SZ')
 
         response = self.client.get(self._build_url("/markets"), params=params)
         response.raise_for_status()
@@ -157,69 +157,19 @@ class PolymarketGammaClient:
 
     def get_events(
             self,
+            search_args: Optional[EventSearchArgs] = None,
             limit: int = 500,
             offset: int = 0,
-            order: Optional[str] = None,
-            ascending: bool = True,
-            event_ids: Optional[Union[str, list[str]]] = None,
-            slugs: Optional[list[str]] = None,
-            archived: Optional[bool] = None,
-            active: Optional[bool] = None,
-            closed: Optional[bool] = None,
-            liquidity_min: Optional[Decimal] = None,
-            liquidity_max: Optional[Decimal] = None,
-            volume_min: Optional[Decimal] = None,
-            volume_max: Optional[Decimal] = None,
-            start_date_min: Optional[datetime] = None,
-            start_date_max: Optional[datetime] = None,
-            end_date_min: Optional[datetime] = None,
-            end_date_max: Optional[datetime] = None,
-            tag: Optional[str] = None,
-            tag_id: Optional[int] = None,
-            tag_slug: Optional[str] = None,
-            related_tags: bool = False,
+            **kwargs,
     ) -> list[Event]:
-        params: dict[str, int | str | list[str] | Decimal] = {
-            "limit": limit,
-            "offset": offset,
-        }
-        if order:
-            params["order"] = order
-            params["ascending"] = ascending
-        if event_ids:
-            params["id"] = event_ids
-        if slugs:
-            params["slug"] = slugs
-        if archived is not None:
-            params["archived"] = archived
-        if active is not None:
-            params["active"] = active
-        if closed is not None:
-            params["closed"] = closed
-        if liquidity_min:
-            params["liquidity_min"] = liquidity_min
-        if liquidity_max:
-            params["liquidity_max"] = liquidity_max
-        if volume_min:
-            params["volume_min"] = volume_min
-        if volume_max:
-            params["volume_max"] = volume_max
-        if start_date_min:
-            params["start_date_min"] = start_date_min.isoformat()
-        if start_date_max:
-            params["start_date_max"] = start_date_max.isoformat()
-        if end_date_min:
-            params["end_date_min"] = end_date_min.isoformat()
-        if end_date_max:
-            params["end_date_max"] = end_date_max.isoformat()
-        if tag:
-            params["tag"] = tag
-        elif tag_id:
-            params["tag_id"] = tag_id
-            if related_tags:
-                params["related_tags"] = related_tags
-        elif tag_slug:
-            params["tag_slug"] = tag_slug
+        if search_args:
+            final_search_args = search_args
+        else:
+            final_search_args = EventSearchArgs(**kwargs)
+
+        params = final_search_args.model_dump(exclude_none=True, by_alias=True, mode='json')
+        params["limit"] = limit
+        params["offset"] = offset
 
         response = self.client.get(self._build_url("/events"), params=params)
         response.raise_for_status()
@@ -227,51 +177,19 @@ class PolymarketGammaClient:
 
     def get_all_events(
             self,
-            order: Optional[str] = None,
-            ascending: bool = True,
-            event_ids: Optional[Union[str, list[str]]] = None,
-            slugs: Optional[list[str]] = None,
-            archived: Optional[bool] = None,
-            active: Optional[bool] = None,
-            closed: Optional[bool] = None,
-            liquidity_min: Optional[Decimal] = None,
-            liquidity_max: Optional[Decimal] = None,
-            volume_min: Optional[Decimal] = None,
-            volume_max: Optional[Decimal] = None,
-            start_date_min: Optional[datetime] = None,
-            start_date_max: Optional[datetime] = None,
-            end_date_min: Optional[datetime] = None,
-            end_date_max: Optional[datetime] = None,
-            tag: Optional[str] = None,
-            tag_id: Optional[int] = None,
-            tag_slug: Optional[str] = None,
-            related_tags: bool = False,
+            search_args: Optional[EventSearchArgs] = None,
+            **kwargs,
     ) -> list[Event]:
         offset = 0
         events = []
 
+        if not search_args:
+            search_args = EventSearchArgs(**kwargs)
+
         while True:
             part = self.get_events(
+                search_args=search_args,
                 offset=offset,
-                order=order,
-                ascending=ascending,
-                event_ids=event_ids,
-                slugs=slugs,
-                archived=archived,
-                active=active,
-                closed=closed,
-                liquidity_min=liquidity_min,
-                liquidity_max=liquidity_max,
-                volume_min=volume_min,
-                volume_max=volume_max,
-                start_date_min=start_date_min,
-                start_date_max=start_date_max,
-                end_date_min=end_date_min,
-                end_date_max=end_date_max,
-                tag=tag,
-                tag_id=tag_id,
-                tag_slug=tag_slug,
-                related_tags=related_tags,
             )
             events.extend(part)
 

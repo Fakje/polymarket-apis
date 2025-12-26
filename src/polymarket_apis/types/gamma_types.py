@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 from pydantic import (
     Field,
@@ -10,9 +10,14 @@ from pydantic import (
     ValidationInfo,
     ValidatorFunctionWrapHandler,
     field_validator,
+    field_serializer,
 )
 
 from .common import Base, EthAddress, FlexibleDatetime, Keccak256
+
+
+def format_time(dt: datetime) -> str:
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class MarketSearchArgs(Base):
@@ -36,6 +41,37 @@ class MarketSearchArgs(Base):
     start_date_max: Optional[datetime] = None
     end_date_min: Optional[datetime] = None
     end_date_max: Optional[datetime] = None
+
+    @field_serializer('start_date_min', 'start_date_max', 'end_date_min', 'end_date_max', when_used='json')
+    def serialize_dt(self, dt: datetime, _info):
+        return format_time(dt)
+
+
+class EventSearchArgs(Base):
+    """Arguments for searching events."""
+    order: Optional[str] = None
+    ascending: bool = True
+    event_ids: Optional[Union[str, list[str]]] = None
+    slugs: Optional[list[str]] = None
+    archived: Optional[bool] = None
+    active: Optional[bool] = None
+    closed: Optional[bool] = None
+    liquidity_min: Optional[Decimal] = None
+    liquidity_max: Optional[Decimal] = None
+    volume_min: Optional[Decimal] = None
+    volume_max: Optional[Decimal] = None
+    start_date_min: Optional[datetime] = None
+    start_date_max: Optional[datetime] = None
+    end_date_min: Optional[datetime] = None
+    end_date_max: Optional[datetime] = None
+    tag: Optional[str] = None
+    tag_id: Optional[int] = None
+    tag_slug: Optional[str] = None
+    related_tags: bool = False
+
+    @field_serializer('start_date_min', 'start_date_max', 'end_date_min', 'end_date_max', when_used='json')
+    def serialize_dt(self, dt: datetime, _info):
+        return format_time(dt)
 
 
 class OptimizedImage(Base):
