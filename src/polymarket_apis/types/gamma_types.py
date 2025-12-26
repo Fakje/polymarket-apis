@@ -15,6 +15,29 @@ from pydantic import (
 from .common import Base, EthAddress, FlexibleDatetime, Keccak256
 
 
+class MarketSearchArgs(Base):
+    """Arguments for searching markets."""
+    order: Optional[str] = None
+    ascending: bool = True
+    archived: Optional[bool] = None
+    active: Optional[bool] = None
+    closed: Optional[bool] = None
+    slugs: Optional[list[str]] = None
+    market_ids: Optional[list[int]] = None
+    token_ids: Optional[list[str]] = None
+    condition_ids: Optional[list[str]] = None
+    tag_id: Optional[int] = None
+    related_tags: Optional[bool] = False
+    liquidity_num_min: Optional[Decimal] = None
+    liquidity_num_max: Optional[Decimal] = None
+    volume_num_min: Optional[Decimal] = None
+    volume_num_max: Optional[Decimal] = None
+    start_date_min: Optional[datetime] = None
+    start_date_max: Optional[datetime] = None
+    end_date_min: Optional[datetime] = None
+    end_date_max: Optional[datetime] = None
+
+
 class OptimizedImage(Base):
     """Optimized image data."""
 

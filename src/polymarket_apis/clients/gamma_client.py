@@ -19,6 +19,7 @@ from ..types.gamma_types import (
     Tag,
     TagRelation,
     Team,
+    MarketSearchArgs,
 )
 
 
@@ -37,32 +38,32 @@ class PolymarketGammaClient:
         return urljoin(self.base_url, endpoint)
 
     def search(
-        self,
-        query: str,
-        cache: Optional[bool] = None,
-        status: Optional[Literal["active", "resolved"]] = None,
-        limit_per_type: Optional[int] = None,  # max is 50
-        page: Optional[int] = None,
-        tags: Optional[list[str]] = None,
-        keep_closed_markets: Optional[bool] = None,
-        sort: Optional[
-            Literal[
-                "volume",
-                "volume_24hr",
-                "liquidity",
-                "start_date",
-                "end_date",
-                "competitive",
-            ]
-        ] = None,
-        ascending: Optional[bool] = None,
-        search_tags: Optional[bool] = None,
-        search_profiles: Optional[bool] = None,
-        recurrence: Optional[
-            Literal["hourly", "daily", "weekly", "monthly", "annual"]
-        ] = None,
-        exclude_tag_ids: Optional[list[int]] = None,
-        optimized: Optional[bool] = None,
+            self,
+            query: str,
+            cache: Optional[bool] = None,
+            status: Optional[Literal["active", "resolved"]] = None,
+            limit_per_type: Optional[int] = None,  # max is 50
+            page: Optional[int] = None,
+            tags: Optional[list[str]] = None,
+            keep_closed_markets: Optional[bool] = None,
+            sort: Optional[
+                Literal[
+                    "volume",
+                    "volume_24hr",
+                    "liquidity",
+                    "start_date",
+                    "end_date",
+                    "competitive",
+                ]
+            ] = None,
+            ascending: Optional[bool] = None,
+            search_tags: Optional[bool] = None,
+            search_profiles: Optional[bool] = None,
+            recurrence: Optional[
+                Literal["hourly", "daily", "weekly", "monthly", "annual"]
+            ] = None,
+            exclude_tag_ids: Optional[list[int]] = None,
+            optimized: Optional[bool] = None,
     ) -> SearchResult:
         params: dict[str, str | list[str] | int | bool] = {
             "q": query,
@@ -104,78 +105,29 @@ class PolymarketGammaClient:
         return GammaMarket(**response.json())
 
     def get_markets(
-        self,
-        limit: int | None = None,
-        offset: int | None = None,
-        order: str | None = None,
-        ascending: bool = True,
-        archived: bool | None = None,
-        active: bool | None = None,
-        closed: bool | None = None,
-        slugs: list[str] | None = None,
-        market_ids: list[int] | None = None,
-        token_ids: list[str] | None = None,
-        condition_ids: list[str] | None = None,
-        tag_id: int | None = None,
-        related_tags: bool | None = False,
-        liquidity_num_min: Decimal | None = None,
-        liquidity_num_max: Decimal | None = None,
-        volume_num_min: Decimal | None = None,
-        volume_num_max: Decimal | None = None,
-        start_date_min: datetime | None = None,
-        start_date_max: datetime | None = None,
-        end_date_min: datetime | None = None,
-        end_date_max: datetime | None = None,
+            self,
+            search_args: MarketSearchArgs,
+            limit: int | None = None,
+            offset: int | None = None,
     ) -> list[GammaMarket]:
-        params: dict[str, Decimal | int | list[int] | str | list[str] | bool] = {}
+        params = search_args.model_dump(exclude_none=True, by_alias=True)
+
         if limit:
             params["limit"] = limit
         if offset:
             params["offset"] = offset
-        if order:
-            params["order"] = order
-            params["ascending"] = ascending
-        if slugs:
-            params["slug"] = slugs
-        if archived is not None:
-            params["archived"] = archived
-        if active is not None:
-            params["active"] = active
-        if closed is not None:
-            params["closed"] = closed
-        if market_ids:
-            params["id"] = market_ids
-        if token_ids:
-            params["clob_token_ids"] = token_ids
-        if condition_ids:
-            params["condition_ids"] = condition_ids
-        if liquidity_num_min:
-            params["liquidity_num_min"] = liquidity_num_min
-        if liquidity_num_max:
-            params["liquidity_num_max"] = liquidity_num_max
-        if volume_num_min:
-            params["volume_num_min"] = volume_num_min
-        if volume_num_max:
-            params["volume_num_max"] = volume_num_max
-        if start_date_min:
-            params["start_date_min"] = start_date_min.isoformat()
-        if start_date_max:
-            params["start_date_max"] = start_date_max.isoformat()
-        if end_date_min:
-            params["end_date_min"] = end_date_min.isoformat()
-        if end_date_max:
-            params["end_date_max"] = end_date_max.isoformat()
-        if tag_id:
-            params["tag_id"] = tag_id
-            if related_tags:
-                params["related_tags"] = related_tags
+
+        # Handle datetime to isoformat conversion
+        for key in ["start_date_min", "start_date_max", "end_date_min", "end_date_max"]:
+            if key in params and isinstance(params[key], datetime):
+                params[key] = params[key].strftime('%Y-%m-%dT%H:%M:%SZ')
 
         response = self.client.get(self._build_url("/markets"), params=params)
         response.raise_for_status()
         return [GammaMarket(**market) for market in response.json()]
 
     def get_market_by_id(
-        self, market_id: str, include_tag: Optional[bool] = None
+            self, market_id: str, include_tag: Optional[bool] = None
     ) -> GammaMarket:
         params = {}
         if include_tag:
@@ -192,7 +144,7 @@ class PolymarketGammaClient:
         return [Tag(**tag) for tag in response.json()]
 
     def get_market_by_slug(
-        self, slug: str, include_tag: Optional[bool] = None
+            self, slug: str, include_tag: Optional[bool] = None
     ) -> GammaMarket:
         params = {}
         if include_tag:
@@ -204,28 +156,28 @@ class PolymarketGammaClient:
         return GammaMarket(**response.json())
 
     def get_events(
-        self,
-        limit: int = 500,
-        offset: int = 0,
-        order: Optional[str] = None,
-        ascending: bool = True,
-        event_ids: Optional[Union[str, list[str]]] = None,
-        slugs: Optional[list[str]] = None,
-        archived: Optional[bool] = None,
-        active: Optional[bool] = None,
-        closed: Optional[bool] = None,
-        liquidity_min: Optional[Decimal] = None,
-        liquidity_max: Optional[Decimal] = None,
-        volume_min: Optional[Decimal] = None,
-        volume_max: Optional[Decimal] = None,
-        start_date_min: Optional[datetime] = None,
-        start_date_max: Optional[datetime] = None,
-        end_date_min: Optional[datetime] = None,
-        end_date_max: Optional[datetime] = None,
-        tag: Optional[str] = None,
-        tag_id: Optional[int] = None,
-        tag_slug: Optional[str] = None,
-        related_tags: bool = False,
+            self,
+            limit: int = 500,
+            offset: int = 0,
+            order: Optional[str] = None,
+            ascending: bool = True,
+            event_ids: Optional[Union[str, list[str]]] = None,
+            slugs: Optional[list[str]] = None,
+            archived: Optional[bool] = None,
+            active: Optional[bool] = None,
+            closed: Optional[bool] = None,
+            liquidity_min: Optional[Decimal] = None,
+            liquidity_max: Optional[Decimal] = None,
+            volume_min: Optional[Decimal] = None,
+            volume_max: Optional[Decimal] = None,
+            start_date_min: Optional[datetime] = None,
+            start_date_max: Optional[datetime] = None,
+            end_date_min: Optional[datetime] = None,
+            end_date_max: Optional[datetime] = None,
+            tag: Optional[str] = None,
+            tag_id: Optional[int] = None,
+            tag_slug: Optional[str] = None,
+            related_tags: bool = False,
     ) -> list[Event]:
         params: dict[str, int | str | list[str] | Decimal] = {
             "limit": limit,
@@ -274,26 +226,26 @@ class PolymarketGammaClient:
         return [Event(**event) for event in response.json()]
 
     def get_all_events(
-        self,
-        order: Optional[str] = None,
-        ascending: bool = True,
-        event_ids: Optional[Union[str, list[str]]] = None,
-        slugs: Optional[list[str]] = None,
-        archived: Optional[bool] = None,
-        active: Optional[bool] = None,
-        closed: Optional[bool] = None,
-        liquidity_min: Optional[Decimal] = None,
-        liquidity_max: Optional[Decimal] = None,
-        volume_min: Optional[Decimal] = None,
-        volume_max: Optional[Decimal] = None,
-        start_date_min: Optional[datetime] = None,
-        start_date_max: Optional[datetime] = None,
-        end_date_min: Optional[datetime] = None,
-        end_date_max: Optional[datetime] = None,
-        tag: Optional[str] = None,
-        tag_id: Optional[int] = None,
-        tag_slug: Optional[str] = None,
-        related_tags: bool = False,
+            self,
+            order: Optional[str] = None,
+            ascending: bool = True,
+            event_ids: Optional[Union[str, list[str]]] = None,
+            slugs: Optional[list[str]] = None,
+            archived: Optional[bool] = None,
+            active: Optional[bool] = None,
+            closed: Optional[bool] = None,
+            liquidity_min: Optional[Decimal] = None,
+            liquidity_max: Optional[Decimal] = None,
+            volume_min: Optional[Decimal] = None,
+            volume_max: Optional[Decimal] = None,
+            start_date_min: Optional[datetime] = None,
+            start_date_max: Optional[datetime] = None,
+            end_date_min: Optional[datetime] = None,
+            end_date_max: Optional[datetime] = None,
+            tag: Optional[str] = None,
+            tag_id: Optional[int] = None,
+            tag_slug: Optional[str] = None,
+            related_tags: bool = False,
     ) -> list[Event]:
         offset = 0
         events = []
@@ -331,10 +283,10 @@ class PolymarketGammaClient:
         return events
 
     def get_event_by_id(
-        self,
-        event_id: int,
-        include_chat: Optional[bool] = None,
-        include_template: Optional[bool] = None,
+            self,
+            event_id: int,
+            include_chat: Optional[bool] = None,
+            include_template: Optional[bool] = None,
     ) -> Event:
         params = {}
         if include_chat:
@@ -348,10 +300,10 @@ class PolymarketGammaClient:
         return Event(**response.json())
 
     def get_event_by_slug(
-        self,
-        slug: str,
-        include_chat: Optional[bool] = None,
-        include_template: Optional[bool] = None,
+            self,
+            slug: str,
+            include_chat: Optional[bool] = None,
+            include_template: Optional[bool] = None,
     ) -> Event:
         params = {}
         if include_chat:
@@ -370,26 +322,26 @@ class PolymarketGammaClient:
         return [Tag(**tag) for tag in response.json()]
 
     def get_teams(
-        self,
-        limit: int = 500,
-        offset: int = 0,
-        order: Optional[
-            Literal[
-                "id",
-                "name",
-                "league",
-                "record",
-                "logo",
-                "abbreviation",
-                "alias",
-                "createdAt",
-                "updatedAt",
-            ]
-        ] = None,
-        ascending: bool = True,
-        league: Optional[str] = None,
-        name: Optional[str] = None,
-        abbreviation: Optional[str] = None,
+            self,
+            limit: int = 500,
+            offset: int = 0,
+            order: Optional[
+                Literal[
+                    "id",
+                    "name",
+                    "league",
+                    "record",
+                    "logo",
+                    "abbreviation",
+                    "alias",
+                    "createdAt",
+                    "updatedAt",
+                ]
+            ] = None,
+            ascending: bool = True,
+            league: Optional[str] = None,
+            name: Optional[str] = None,
+            abbreviation: Optional[str] = None,
     ) -> list[Team]:
         params: dict[str, int | str] = {
             "limit": limit,
@@ -409,24 +361,24 @@ class PolymarketGammaClient:
         return [Team(**team) for team in response.json()]
 
     def get_all_teams(
-        self,
-        order: Optional[
-            Literal[
-                "id",
-                "name",
-                "league",
-                "record",
-                "logo",
-                "abbreviation",
-                "alias",
-                "createdAt",
-                "updatedAt",
-            ]
-        ] = None,
-        ascending: bool = True,
-        league: Optional[str] = None,
-        name: Optional[str] = None,
-        abbreviation: Optional[str] = None,
+            self,
+            order: Optional[
+                Literal[
+                    "id",
+                    "name",
+                    "league",
+                    "record",
+                    "logo",
+                    "abbreviation",
+                    "alias",
+                    "createdAt",
+                    "updatedAt",
+                ]
+            ] = None,
+            ascending: bool = True,
+            league: Optional[str] = None,
+            name: Optional[str] = None,
+            abbreviation: Optional[str] = None,
     ) -> list[Team]:
         offset = 0
         teams = []
@@ -450,33 +402,33 @@ class PolymarketGammaClient:
         return teams
 
     def get_sports_metadata(
-        self,
+            self,
     ) -> list[Sport]:
         response = self.client.get(self._build_url("/sports"))
         response.raise_for_status()
         return [Sport(**sport) for sport in response.json()]
 
     def get_tags(
-        self,
-        limit: int = 300,
-        offset: int = 0,
-        order: Optional[
-            Literal[
-                "id",
-                "label",
-                "slug",
-                "forceShow",
-                "forceHide",
-                "isCarousel",
-                "createdAt",
-                "updatedAt",
-                "createdBy",
-                "updatedBy",
-            ]
-        ] = None,
-        ascending: bool = True,
-        include_templates: Optional[bool] = None,
-        is_carousel: Optional[bool] = None,
+            self,
+            limit: int = 300,
+            offset: int = 0,
+            order: Optional[
+                Literal[
+                    "id",
+                    "label",
+                    "slug",
+                    "forceShow",
+                    "forceHide",
+                    "isCarousel",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy",
+                    "updatedBy",
+                ]
+            ] = None,
+            ascending: bool = True,
+            include_templates: Optional[bool] = None,
+            is_carousel: Optional[bool] = None,
     ) -> list[Tag]:
         params: dict[str, int | str] = {
             "limit": limit,
@@ -494,24 +446,24 @@ class PolymarketGammaClient:
         return [Tag(**tag) for tag in response.json()]
 
     def get_all_tags(
-        self,
-        order: Optional[
-            Literal[
-                "id",
-                "label",
-                "slug",
-                "forceShow",
-                "forceHide",
-                "isCarousel",
-                "createdAt",
-                "updatedAt",
-                "createdBy",
-                "updatedBy",
-            ]
-        ] = None,
-        ascending: bool = True,
-        include_templates: Optional[bool] = None,
-        is_carousel: Optional[bool] = None,
+            self,
+            order: Optional[
+                Literal[
+                    "id",
+                    "label",
+                    "slug",
+                    "forceShow",
+                    "forceHide",
+                    "isCarousel",
+                    "createdAt",
+                    "updatedAt",
+                    "createdBy",
+                    "updatedBy",
+                ]
+            ] = None,
+            ascending: bool = True,
+            include_templates: Optional[bool] = None,
+            is_carousel: Optional[bool] = None,
     ) -> list[Tag]:
         offset = 0
         tags = []
@@ -542,10 +494,10 @@ class PolymarketGammaClient:
         return Tag(**response.json())
 
     def get_related_tag_ids_by_tag_id(
-        self,
-        tag_id: int,
-        omit_empty: Optional[bool] = None,
-        status: Optional[Literal["active", "closed", "all"]] = None,
+            self,
+            tag_id: int,
+            omit_empty: Optional[bool] = None,
+            status: Optional[Literal["active", "closed", "all"]] = None,
     ) -> list[TagRelation]:
         params = {}
         if omit_empty is not None:
@@ -559,10 +511,10 @@ class PolymarketGammaClient:
         return [TagRelation(**tag) for tag in response.json()]
 
     def get_related_tag_ids_by_slug(
-        self,
-        slug: str,
-        omit_empty: Optional[bool] = None,
-        status: Optional[Literal["active", "closed", "all"]] = None,
+            self,
+            slug: str,
+            omit_empty: Optional[bool] = None,
+            status: Optional[Literal["active", "closed", "all"]] = None,
     ) -> list[TagRelation]:
         params = {}
         if omit_empty is not None:
@@ -576,10 +528,10 @@ class PolymarketGammaClient:
         return [TagRelation(**tag) for tag in response.json()]
 
     def get_related_tags_by_tag_id(
-        self,
-        tag_id: int,
-        omit_empty: Optional[bool] = None,
-        status: Optional[Literal["active", "closed", "all"]] = None,
+            self,
+            tag_id: int,
+            omit_empty: Optional[bool] = None,
+            status: Optional[Literal["active", "closed", "all"]] = None,
     ) -> list[Tag]:
         params = {}
         if omit_empty is not None:
@@ -593,10 +545,10 @@ class PolymarketGammaClient:
         return [Tag(**tag) for tag in response.json()]
 
     def get_related_tags_by_slug(
-        self,
-        slug: str,
-        omit_empty: Optional[bool] = None,
-        status: Optional[Literal["active", "closed", "all"]] = None,
+            self,
+            slug: str,
+            omit_empty: Optional[bool] = None,
+            status: Optional[Literal["active", "closed", "all"]] = None,
     ) -> list[Tag]:
         params = {}
         if omit_empty is not None:
@@ -610,19 +562,19 @@ class PolymarketGammaClient:
         return [Tag(**tag) for tag in response.json()]
 
     def get_series(
-        self,
-        limit: int = 300,
-        offset: int = 0,
-        order: Optional[str] = None,
-        ascending: bool = True,
-        slug: Optional[str] = None,
-        closed: Optional[bool] = None,
-        include_chat: Optional[bool] = None,
-        recurrence: Optional[
-            Literal[
-                "hourly", "daily", "weekly", "monthly", "annual"
-            ]  # results also contain "15m" but the server returns a 422 Unprocessable Content
-        ] = None,
+            self,
+            limit: int = 300,
+            offset: int = 0,
+            order: Optional[str] = None,
+            ascending: bool = True,
+            slug: Optional[str] = None,
+            closed: Optional[bool] = None,
+            include_chat: Optional[bool] = None,
+            recurrence: Optional[
+                Literal[
+                    "hourly", "daily", "weekly", "monthly", "annual"
+                ]  # results also contain "15m" but the server returns a 422 Unprocessable Content
+            ] = None,
     ) -> list[Series]:
         params: dict[str, str | int | list[int]] = {
             "limit": limit,
@@ -645,15 +597,15 @@ class PolymarketGammaClient:
         return [Series(**series) for series in response.json()]
 
     def get_all_series(
-        self,
-        order: Optional[str] = None,
-        ascending: bool = True,
-        slug: Optional[str] = None,
-        closed: Optional[bool] = None,
-        include_chat: Optional[bool] = None,
-        recurrence: Optional[
-            Literal["hourly", "daily", "weekly", "monthly", "annual"]
-        ] = None,
+            self,
+            order: Optional[str] = None,
+            ascending: bool = True,
+            slug: Optional[str] = None,
+            closed: Optional[bool] = None,
+            include_chat: Optional[bool] = None,
+            recurrence: Optional[
+                Literal["hourly", "daily", "weekly", "monthly", "annual"]
+            ] = None,
     ) -> list[Series]:
         offset = 0
         series = []
@@ -682,15 +634,15 @@ class PolymarketGammaClient:
         return Series(**response.json())
 
     def get_comments(
-        self,
-        parent_entity_type: Literal["Event", "Series", "market"],
-        parent_entity_id: int,
-        limit=500,
-        offset=0,
-        order: Optional[str] = None,
-        ascending: bool = True,
-        get_positions: Optional[bool] = None,
-        holders_only: Optional[bool] = None,
+            self,
+            parent_entity_type: Literal["Event", "Series", "market"],
+            parent_entity_id: int,
+            limit=500,
+            offset=0,
+            order: Optional[str] = None,
+            ascending: bool = True,
+            get_positions: Optional[bool] = None,
+            holders_only: Optional[bool] = None,
     ) -> list[Comment]:
         """Warning, the server doesn't give back the right amount of comments you asked for."""
         params: dict[str, str | int] = {
@@ -711,7 +663,7 @@ class PolymarketGammaClient:
         return [Comment(**comment) for comment in response.json()]
 
     def get_comments_by_id(
-        self, comment_id: str, get_positions: Optional[bool] = None
+            self, comment_id: str, get_positions: Optional[bool] = None
     ) -> list[Comment]:
         """Returns all comments that belong to the comment's thread."""
         params = {}
@@ -724,12 +676,12 @@ class PolymarketGammaClient:
         return [Comment(**comment) for comment in response.json()]
 
     def get_comments_by_user_address(
-        self,
-        user_address: EthAddress,  # warning, this is the base address, not the proxy address
-        limit=500,
-        offset=0,
-        order: Optional[str] = None,
-        ascending: bool = True,
+            self,
+            user_address: EthAddress,  # warning, this is the base address, not the proxy address
+            limit=500,
+            offset=0,
+            order: Optional[str] = None,
+            ascending: bool = True,
     ) -> list[Comment]:
         params: dict[str, str | int] = {
             "limit": limit,
@@ -755,10 +707,10 @@ class PolymarketGammaClient:
         }
 
         with self.client.stream(
-            method="POST",
-            url="https://polymarket.com/api/grok/event-summary",
-            params=params,
-            json=json_payload,
+                method="POST",
+                url="https://polymarket.com/api/grok/event-summary",
+                params=params,
+                json=json_payload,
         ) as stream:
             messages = []
             citations = []
@@ -769,7 +721,7 @@ class PolymarketGammaClient:
                     line_bytes.decode() if isinstance(line_bytes, bytes) else line_bytes
                 )
                 if line.startswith("__SOURCES__:"):
-                    sources_json_str = line[len("__SOURCES__:") :]
+                    sources_json_str = line[len("__SOURCES__:"):]
                     try:
                         sources_obj = json.loads(sources_json_str)
                         for source in sources_obj.get("sources", []):
@@ -790,7 +742,7 @@ class PolymarketGammaClient:
                 print(f"- {source.get('url', 'Unknown URL')}")
 
     def grok_election_market_explanation(
-        self, candidate_name: str, election_title: str
+            self, candidate_name: str, election_title: str
     ):
         text = f"Provide candidate information for {candidate_name} in the {election_title} on Polymarket."
         json_payload = {
