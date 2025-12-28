@@ -1,9 +1,10 @@
+import asyncio
+import json
 from collections.abc import Callable
 from json import JSONDecodeError
 from typing import Any, Optional
 
-from lomond import WebSocket
-from lomond.persist import persist
+import websockets
 from pydantic import ValidationError
 
 from ..types.clob_types import ApiCreds
@@ -31,6 +32,14 @@ from ..types.websockets_types import (
     TradeEvent,
 )
 from ..utilities.exceptions import AuthenticationRequiredError
+
+
+class EventWrapper:
+    """Wrapper to mimic the interface of lomond events for backward compatibility."""
+
+    def __init__(self, json_data):
+        self.json = json_data
+        self.text = json.dumps(json_data)
 
 
 def _process_market_event(event):
@@ -90,10 +99,10 @@ def _process_live_data_event(event):
             case "reaction_created" | "reaction_removed":
                 print(ReactionEvent(**message), "\n")
             case (
-                "request_created"
-                | "request_edited"
-                | "request_canceled"
-                | "request_expired"
+            "request_created"
+            | "request_edited"
+            | "request_canceled"
+            | "request_expired"
             ):
                 print(RequestEvent(**message), "\n")
             case "quote_created" | "quote_edited" | "quote_canceled" | "quote_expired":
@@ -131,90 +140,106 @@ class PolymarketWebsocketsClient:
         self.url_user = "wss://ws-subscriptions-clob.polymarket.com/ws/user"
         self.url_live_data = "wss://ws-live-data.polymarket.com"
 
-    def market_socket(
-        self, token_ids: list[str], process_event: Callable = _process_market_event
+    async def market_socket(
+            self, token_ids: list[str], process_event: Callable = _process_market_event
     ):
         """
         Connect to the market websocket and subscribe to market events for specific token IDs.
-
-        Args:
-            token_ids: List of token IDs to subscribe to
-            process_event: Callback function to process received events
-
+        Async implementation using websockets library.
         """
-        websocket = WebSocket(self.url_market)
+        while True:
+            try:
+                async with websockets.connect(self.url_market) as websocket:
+                    # Send subscription immediately upon connection
+                    await websocket.send(json.dumps({"assets_ids": token_ids}))
 
-        for event in persist(websocket):  # persist automatically reconnects
-            if event.name == "ready":
-                websocket.send_json(
-                    assets_ids=token_ids,
-                )
-            elif event.name == "text":
-                process_event(event)
+                    async for message in websocket:
+                        try:
+                            data = json.loads(message)
+                            # Wrap in EventWrapper to maintain compatibility with existing callbacks
+                            process_event(EventWrapper(data))
+                        except JSONDecodeError:
+                            print(f"Failed to decode message: {message}")
+                        except Exception as e:
+                            print(f"Error processing message: {e}")
 
-    def user_socket(
-        self, creds: ApiCreds, process_event: Callable = _process_user_event
+            except Exception as e:
+                print(f"Market socket connection error: {e}. Reconnecting in 1s...")
+                await asyncio.sleep(1)
+
+    async def user_socket(
+            self, creds: ApiCreds, process_event: Callable = _process_user_event
     ):
         """
         Connect to the user websocket and subscribe to user events.
-
-        Args:
-            creds: API credentials for authentication
-            process_event: Callback function to process received events
-
+        Async implementation using websockets library.
         """
-        websocket = WebSocket(self.url_user)
+        while True:
+            try:
+                async with websockets.connect(self.url_user) as websocket:
+                    # Send auth immediately upon connection
+                    await websocket.send(json.dumps({"auth": creds.model_dump(by_alias=True)}))
 
-        for event in persist(websocket):
-            if event.name == "ready":
-                websocket.send_json(
-                    auth=creds.model_dump(by_alias=True),
-                )
-            elif event.name == "text":
-                process_event(event)
+                    async for message in websocket:
+                        try:
+                            data = json.loads(message)
+                            process_event(EventWrapper(data))
+                        except JSONDecodeError:
+                            print(f"Failed to decode message: {message}")
+                        except Exception as e:
+                            print(f"Error processing message: {e}")
 
-    def live_data_socket(
-        self,
-        subscriptions: list[dict[str, Any]],
-        process_event: Callable = _process_live_data_event,
-        creds: Optional[ApiCreds] = None,
+            except Exception as e:
+                print(f"User socket connection error: {e}. Reconnecting in 1s...")
+                await asyncio.sleep(1)
+
+    async def live_data_socket(
+            self,
+            subscriptions: list[dict[str, Any]],
+            process_event: Callable = _process_live_data_event,
+            creds: Optional[ApiCreds] = None,
     ):
-        # info on how to subscribe found at https://github.com/Polymarket/real-time-data-client?tab=readme-ov-file#subscribe
         """
         Connect to the live data websocket and subscribe to specified events.
-
-        Args:
-            subscriptions: List of subscription configurations
-            process_event: Callback function to process received events
-            creds: ApiCreds for authentication if subscribing to clob_user topic
-
+        Async implementation using websockets library.
         """
-        websocket = WebSocket(self.url_live_data)
-
         needs_auth = any(sub.get("topic") == "clob_user" for sub in subscriptions)
 
-        for event in persist(websocket):
-            if event.name == "ready":
-                if needs_auth:
-                    if creds is None:
-                        msg = "ApiCreds credentials are required for the clob_user topic subscriptions"
-                        raise AuthenticationRequiredError(msg)
-                    subscriptions_with_creds = []
-                    for sub in subscriptions:
-                        if sub.get("topic") == "clob_user":
-                            sub_copy = sub.copy()
-                            sub_copy["clob_auth"] = creds.model_dump()
-                            subscriptions_with_creds.append(sub_copy)
-                        else:
-                            subscriptions_with_creds.append(sub)
-                    subscriptions = subscriptions_with_creds
+        if needs_auth:
+            if creds is None:
+                msg = "ApiCreds credentials are required for the clob_user topic subscriptions"
+                raise AuthenticationRequiredError(msg)
 
-                payload = {
-                    "action": "subscribe",
-                    "subscriptions": subscriptions,
-                }
+            # Prepare auth subscriptions
+            subscriptions_with_creds = []
+            for sub in subscriptions:
+                if sub.get("topic") == "clob_user":
+                    sub_copy = sub.copy()
+                    sub_copy["clob_auth"] = creds.model_dump()
+                    subscriptions_with_creds.append(sub_copy)
+                else:
+                    subscriptions_with_creds.append(sub)
+            subscriptions = subscriptions_with_creds
 
-                websocket.send_json(**payload)
+        payload = {
+            "action": "subscribe",
+            "subscriptions": subscriptions,
+        }
 
-            elif event.name == "text":
-                process_event(event)
+        while True:
+            try:
+                async with websockets.connect(self.url_live_data) as websocket:
+                    await websocket.send(json.dumps(payload))
+
+                    async for message in websocket:
+                        try:
+                            data = json.loads(message)
+                            process_event(EventWrapper(data))
+                        except JSONDecodeError:
+                            print(f"Failed to decode message: {message}")
+                        except Exception as e:
+                            print(f"Error processing message: {e}")
+
+            except Exception as e:
+                print(f"Live data socket connection error: {e}. Reconnecting in 1s...")
+                await asyncio.sleep(1)
