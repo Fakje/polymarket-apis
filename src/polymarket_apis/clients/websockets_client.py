@@ -42,7 +42,7 @@ class EventWrapper:
         self.text = json.dumps(json_data)
 
 
-def _process_market_event(event):
+async def _process_market_event(event):
     try:
         message = event.json
         if isinstance(message, list):
@@ -71,7 +71,7 @@ def _process_market_event(event):
         print(event.json)
 
 
-def _process_user_event(event):
+async def _process_user_event(event):
     try:
         message = event.json
         match message["event_type"]:
@@ -86,7 +86,7 @@ def _process_user_event(event):
         print(e.errors(), "\n")
 
 
-def _process_live_data_event(event):
+async def _process_live_data_event(event):
     try:
         message = event.json
         match message["type"]:
@@ -157,7 +157,7 @@ class PolymarketWebsocketsClient:
                         try:
                             data = json.loads(message)
                             # Wrap in EventWrapper to maintain compatibility with existing callbacks
-                            process_event(EventWrapper(data))
+                            await process_event(EventWrapper(data))
                         except JSONDecodeError:
                             print(f"Failed to decode message: {message}")
                         except Exception as e:
@@ -183,7 +183,7 @@ class PolymarketWebsocketsClient:
                     async for message in websocket:
                         try:
                             data = json.loads(message)
-                            process_event(EventWrapper(data))
+                            await process_event(EventWrapper(data))
                         except JSONDecodeError:
                             print(f"Failed to decode message: {message}")
                         except Exception as e:
@@ -234,7 +234,7 @@ class PolymarketWebsocketsClient:
                     async for message in websocket:
                         try:
                             data = json.loads(message)
-                            process_event(EventWrapper(data))
+                            await process_event(EventWrapper(data))
                         except JSONDecodeError:
                             print(f"Failed to decode message: {message}")
                         except Exception as e:
