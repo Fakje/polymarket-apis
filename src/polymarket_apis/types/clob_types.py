@@ -53,7 +53,7 @@ class TokenValueDict(RootModel):
 
 class BookParams(Base):
     token_id: str
-    side: Literal["BUY", "SELL"]
+    side: Optional[Literal["BUY", "SELL"]]
 
 
 class Price(BookParams):
