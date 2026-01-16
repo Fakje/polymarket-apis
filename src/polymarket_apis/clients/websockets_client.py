@@ -141,7 +141,7 @@ class PolymarketWebsocketsClient:
         self.url_live_data = "wss://ws-live-data.polymarket.com"
 
     async def market_socket(
-            self, token_ids: list[str], process_event: Callable = _process_market_event
+            self, token_ids: list[str], custom_feature_enabled: bool = False, process_event: Callable = _process_market_event
     ):
         """
         Connect to the market websocket and subscribe to market events for specific token IDs.
@@ -151,7 +151,7 @@ class PolymarketWebsocketsClient:
             try:
                 async with websockets.connect(self.url_market) as websocket:
                     # Send subscription immediately upon connection
-                    await websocket.send(json.dumps({"assets_ids": token_ids}))
+                    await websocket.send(json.dumps({"assets_ids": token_ids, "custom_feature_enabled": custom_feature_enabled}))
 
                     async for message in websocket:
                         try:
