@@ -88,6 +88,8 @@ from .websockets_types import (
     RequestEvent,
     TickSizeChangeEvent,
     TradeEvent,
+    EventMessage,
+    MarketResolvedEvent
 )
 
 __all__ = [

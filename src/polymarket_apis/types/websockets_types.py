@@ -8,6 +8,7 @@ from ..types.clob_types import MakerOrder, OrderBookSummary, TickSize
 from ..types.common import Base, EthAddress, Keccak256, TimeseriesPoint
 from ..types.gamma_types import Comment, Reaction
 
+
 # wss://ws-subscriptions-clob.polymarket.com/ws/market types
 
 
@@ -61,6 +62,29 @@ class TickSizeChangeEvent(TickSizeChange):
 class LastTradePriceEvent(LastTradePrice):
     timestamp: datetime
     event_type: Literal["last_trade_price"]
+
+class EventMessage(Base):
+    id: str
+    ticker: str
+    slug: str
+    title: str
+    description: str
+
+class MarketResolvedEvent(Base):
+    market_id: Keccak256 = Field(alias="id")
+    condition_id: Keccak256 = Field(alias="market")
+    question: str
+    market: str
+    slug: str
+    description: str
+    assets_ids: list[str] = Field(alias="token_ids")
+    outcomes: list[str]
+    winning_asset_id: str
+    winning_outcome: str
+    event_message: EventMessage
+    timestamp: datetime
+    event_type: Literal["market_resolved"]
+
 
 
 # wss://ws-subscriptions-clob.polymarket.com/ws/user types
