@@ -16,7 +16,9 @@ from pydantic import (
 from .common import Base, EthAddress, FlexibleDatetime, Keccak256
 
 
-def format_time(dt: datetime) -> str:
+def format_time(dt: Optional[datetime]) -> Optional[str]:
+    if dt is None:
+        return None
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
