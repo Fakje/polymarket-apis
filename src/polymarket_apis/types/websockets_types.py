@@ -85,6 +85,16 @@ class MarketResolvedEvent(Base):
     timestamp: datetime
     event_type: Literal["market_resolved"]
 
+class BestBidAskEvent(Base):
+    market: str
+    asset_id: str
+    best_bid: Decimal
+    best_ask: Decimal
+    spread: Decimal
+    timestamp: datetime = Field(validation_alias=AliasChoices("t", "timestamp"))
+    event_type: Literal["best_bid_ask"]
+
+
 
 
 # wss://ws-subscriptions-clob.polymarket.com/ws/user types

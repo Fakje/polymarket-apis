@@ -89,7 +89,8 @@ from .websockets_types import (
     TickSizeChangeEvent,
     TradeEvent,
     EventMessage,
-    MarketResolvedEvent
+    MarketResolvedEvent,
+    BestBidAskEvent
 )
 
 __all__ = [
@@ -98,6 +99,7 @@ __all__ = [
     "ActivityTradeEvent",
     "ApiCreds",
     "AssetType",
+    "BestBidAskEvent",
     "BidAsk",
     "BookParams",
     "ClobMarket",
@@ -112,6 +114,7 @@ __all__ = [
     "ErrorEvent",
     "EthAddress",
     "Event",
+    "EventMessage",
     "FlexibleDatetime",
     "GammaMarket",
     "Holder",
@@ -125,6 +128,7 @@ __all__ = [
     "LiveDataTickSizeChangeEvent",
     "LiveDataTradeEvent",
     "MarketOrderArgs",
+    "MarketResolvedEvent",
     "MarketRewards",
     "MarketStatusChangeEvent",
     "Midpoint",

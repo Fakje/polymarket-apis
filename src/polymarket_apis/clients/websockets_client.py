@@ -11,6 +11,7 @@ from ..types.clob_types import ApiCreds
 from ..types.websockets_types import (
     ActivityOrderMatchEvent,
     ActivityTradeEvent,
+    BestBidAskEvent,
     CommentEvent,
     CryptoPriceSubscribeEvent,
     CryptoPriceUpdateEvent,
@@ -21,6 +22,7 @@ from ..types.websockets_types import (
     LiveDataPriceChangeEvent,
     LiveDataTickSizeChangeEvent,
     LiveDataTradeEvent,
+    MarketResolvedEvent,
     MarketStatusChangeEvent,
     OrderBookSummaryEvent,
     OrderEvent,
@@ -62,6 +64,10 @@ async def _process_market_event(event):
                 print(TickSizeChangeEvent(**message), "\n")
             case "last_trade_price":
                 print(LastTradePriceEvent(**message), "\n")
+            case "best_bid_ask":
+                print(BestBidAskEvent(**message), "\n")
+            case "market_resolved":
+                print(MarketResolvedEvent(**message), "\n")
             case _:
                 print(message)
     except JSONDecodeError:
