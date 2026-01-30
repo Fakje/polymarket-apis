@@ -71,17 +71,17 @@ class EventMessage(Base):
     description: str
 
 class MarketResolvedEvent(Base):
-    market_id: Keccak256 = Field(alias="id")
-    condition_id: Keccak256 = Field(alias="market")
-    question: str
+    market_id: str = Field(alias="id")
+    condition_id: str = Field(alias="market")
+    question: Optional[str]
     market: str
-    slug: str
-    description: str
+    slug: Optional[str]
+    description: Optional[str]
     assets_ids: list[str] = Field(alias="token_ids")
-    outcomes: list[str]
+    outcomes: Optional[list[str]]
     winning_asset_id: str
     winning_outcome: str
-    event_message: EventMessage
+    event_message: Optional[EventMessage]
     timestamp: datetime
     event_type: Literal["market_resolved"]
 
